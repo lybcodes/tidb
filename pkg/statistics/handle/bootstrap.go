@@ -300,8 +300,6 @@ table.ColAndIdxExistenceMap.SetChecked()
 ```python
 table.ColAndIdxExistenceMap.SetChecked()
 ```
-
-Both conflicts are resolved by including the method call `SetChecked()` from the `origin/release-8.5` branch.
 		cache.Put(table.PhysicalID, table) // put this table in the cache because all statstics of the table have been read.
 	}
 }

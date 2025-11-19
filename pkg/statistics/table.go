@@ -114,6 +114,7 @@ func (m *ColAndIdxExistenceMap) DeleteIdxNotFound(id int64) {
 }
 
 ```go
+```
 // Checked returns whether the map has been checked.
 func (m *ColAndIdxExistenceMap) Checked() bool {
 	return m.checked
@@ -123,7 +124,6 @@ func (m *ColAndIdxExistenceMap) Checked() bool {
 func (m *ColAndIdxExistenceMap) SetChecked() {
 	m.checked = true
 }
-```
 // HasAnalyzed checks whether a column/index stats exists and it has stats.
 // TODO: the map should only keep the analyzed cols.
 // There's three possible status of column/index's statistics:

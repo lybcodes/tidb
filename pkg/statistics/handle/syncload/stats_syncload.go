@@ -374,10 +374,11 @@ func (s *statsSyncLoad) handleOneItemTask(task *statstypes.NeededItemTask) (err 
 		// If this column is not analyzed yet and we don't have it in memory.
 		// We create a fake one for the pseudo estimation.
 		// Otherwise, it will trigger the sync/async load again, even if the column has not been analyzed.
-<<<<<<< HEAD
-		if !analyzed {
+```
+		if loadNeeded && !analyzed {
 			wrapper.col = statistics.EmptyColumn(item.TableID, isPkIsHandle, wrapper.colInfo)
 			s.updateCachedItem(item, wrapper.col, wrapper.idx, task.Item.FullLoad)
+```
 =======
 		if loadNeeded && !analyzed {
 			wrapper.col = statistics.EmptyColumn(item.TableID, isPkIsHandle, wrapper.colInfo)
@@ -407,8 +408,7 @@ func (s *statsSyncLoad) handleOneItemTask(task *statstypes.NeededItemTask) (err 
 	}
 	metrics.ReadStatsHistogram.Observe(float64(time.Since(t).Milliseconds()))
 	if needUpdate {
-<<<<<<< HEAD
-		s.updateCachedItem(item, wrapper.col, wrapper.idx, task.Item.FullLoad)
+s.updateCachedItem(tblInfo, item, wrapper.col, wrapper.idx, task.Item.FullLoad)
 =======
 		s.updateCachedItem(tblInfo, item, wrapper.col, wrapper.idx, task.Item.FullLoad)
 >>>>>>> origin/release-8.5
@@ -562,16 +562,14 @@ func (*statsSyncLoad) writeToTimeoutChan(taskCh chan *statstypes.NeededItemTask,
 }
 
 // updateCachedItem updates the column/index hist to global statsCache.
-<<<<<<< HEAD
-<<<<<<< HEAD
+func (s *statsSyncLoad) updateCachedItem(tblInfo *model.TableInfo, item model.TableItemID, colHist *statistics.Column, idxHist *statistics.Index, fullLoaded bool) (updated bool) {
+	s.mutexForStatsCache.Lock()
+	defer s.mutexForStatsCache.Unlock()
+=======
 func (s *statsSyncLoad) updateCachedItem(tblInfo *model.TableInfo, item model.TableItemID, colHist *statistics.Column, idxHist *statistics.Index, fullLoaded bool) (updated bool) {
 	s.StatsLoad.Lock()
 	defer s.StatsLoad.Unlock()
-=======
-func (s *statsSyncLoad) updateCachedItem(item model.TableItemID, colHist *statistics.Column, idxHist *statistics.Index, fullLoaded bool) (updated bool) {
-	s.mutexForStatsCache.Lock()
-	defer s.mutexForStatsCache.Unlock()
->>>>>>> 3e7f31765eb (stats: remove ColAndIdxExistenceMap checked flag (#63626))
+>>>>>>> origin/release-8.5
 =======
 func (s *statsSyncLoad) updateCachedItem(tblInfo *model.TableInfo, item model.TableItemID, colHist *statistics.Column, idxHist *statistics.Index, fullLoaded bool) (updated bool) {
 	s.StatsLoad.Lock()
@@ -583,8 +581,7 @@ func (s *statsSyncLoad) updateCachedItem(tblInfo *model.TableInfo, item model.Ta
 	if !ok {
 		return false
 	}
-<<<<<<< HEAD
-<<<<<<< HEAD
+It seems you have provided an incomplete conflict snippet without the actual code to resolve. Please share the full conflicting code so I can analyze and provide the resolved version.
 =======
 >>>>>>> origin/release-8.5
 	if !tbl.ColAndIdxExistenceMap.Checked() {
@@ -601,9 +598,9 @@ func (s *statsSyncLoad) updateCachedItem(tblInfo *model.TableInfo, item model.Ta
 		}
 		tbl.ColAndIdxExistenceMap.SetChecked()
 	}
-<<<<<<< HEAD
+It seems you haven't provided the actual conflicting code snippet. Could you please share the full conflicting code so I can resolve it for you?
 =======
->>>>>>> 3e7f31765eb (stats: remove ColAndIdxExistenceMap checked flag (#63626))
+>>>>>>> origin/release-8.5
 =======
 >>>>>>> origin/release-8.5
 	if !item.IsIndex && colHist != nil {
@@ -613,12 +610,10 @@ func (s *statsSyncLoad) updateCachedItem(tblInfo *model.TableInfo, item model.Ta
 		if c != nil && (c.IsFullLoad() || !fullLoaded) {
 			return false
 		}
-<<<<<<< HEAD
-<<<<<<< HEAD
-		tbl = tbl.Copy()
+tbl = tbl.CopyAs(statistics.ColumnMapWritable)
 =======
-		tbl = tbl.CopyAs(statistics.ColumnMapWritable)
->>>>>>> 3e7f31765eb (stats: remove ColAndIdxExistenceMap checked flag (#63626))
+		tbl = tbl.Copy()
+>>>>>>> origin/release-8.5
 =======
 		tbl = tbl.Copy()
 >>>>>>> origin/release-8.5
@@ -641,12 +636,10 @@ func (s *statsSyncLoad) updateCachedItem(tblInfo *model.TableInfo, item model.Ta
 		if index != nil && (index.IsFullLoad() || !fullLoaded) {
 			return true
 		}
-<<<<<<< HEAD
-<<<<<<< HEAD
-		tbl = tbl.Copy()
+tbl = tbl.CopyAs(statistics.IndexMapWritable)
 =======
-		tbl = tbl.CopyAs(statistics.IndexMapWritable)
->>>>>>> 3e7f31765eb (stats: remove ColAndIdxExistenceMap checked flag (#63626))
+		tbl = tbl.Copy()
+>>>>>>> origin/release-8.5
 =======
 		tbl = tbl.Copy()
 >>>>>>> origin/release-8.5
