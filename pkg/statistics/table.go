@@ -95,9 +95,10 @@ type Table struct {
 
 // ColAndIdxExistenceMap is the meta map for statistics.Table.
 // It can tell whether a column/index really has its statistics. So we won't send useless kv request when we do online stats loading.
-// We use this map to decide the stats status of a column/index. So it should be fully initialized before we check whether a column/index is analyzed or not.
 type ColAndIdxExistenceMap struct {
-	checked     bool
+	// We use this map to decide the stats status of a column/index. So it should be fully initialized before we check whether a column/index is analyzed or not.
+	checked bool
+}
 	colAnalyzed map[int64]bool
 	idxAnalyzed map[int64]bool
 }
@@ -117,11 +118,10 @@ func (m *ColAndIdxExistenceMap) Checked() bool {
 	return m.checked
 }
 
-// SetChecked set the map as checked.
+// SetChecked sets the map as checked.
 func (m *ColAndIdxExistenceMap) SetChecked() {
 	m.checked = true
 }
-
 // HasAnalyzed checks whether a column/index stats exists and it has stats.
 // TODO: the map should only keep the analyzed cols.
 // There's three possible status of column/index's statistics:
@@ -876,13 +876,13 @@ func (t *Table) ColumnIsLoadNeeded(id int64, fullLoad bool) (*Column, bool, bool
 }
 
 // IndexIsLoadNeeded checks whether the index needs trigger the async/sync load.
-// The Index should be visible in the table and really has analyzed statistics in the stroage.
+// The Index should be visible in the table and really has analyzed statistics in the storage.
 // Also, if the stats has been loaded into the memory, we also don't need to load it.
 // We return the Index together with the checking result, to avoid accessing the map multiple times.
 func (t *Table) IndexIsLoadNeeded(id int64) (*Index, bool) {
 	idx, ok := t.indices[id]
 	// If the index is not in the memory, and we have its stats in the storage. We need to trigger the load.
-	if !ok && (t.ColAndIdxExistenceMap.HasAnalyzed(id, true) || !t.ColAndIdxExistenceMap.Checked()) {
+if !ok && (t.ColAndIdxExistenceMap.HasAnalyzed(id, true) || !t.ColAndIdxExistenceMap.Checked()) {
 		return nil, true
 	}
 	// If the index is in the memory, we check its embedded func.
