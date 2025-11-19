@@ -190,7 +190,6 @@ func NewColAndIndexExistenceMapWithoutSize() *ColAndIdxExistenceMap {
 		colAnalyzed: make(map[int64]bool, defaultColCap),
 		idxAnalyzed: make(map[int64]bool, defaultIdxCap),
 	}
-}
 
 // NewColAndIndexExistenceMap return a new object with the given capcity.
 func NewColAndIndexExistenceMap(colCap, idxCap int) *ColAndIdxExistenceMap {
@@ -198,7 +197,6 @@ func NewColAndIndexExistenceMap(colCap, idxCap int) *ColAndIdxExistenceMap {
 		colAnalyzed: make(map[int64]bool, colCap),
 		idxAnalyzed: make(map[int64]bool, idxCap),
 	}
-}
 
 // ColAndIdxExistenceMapIsEqual is used in testing, checking whether the two are equal.
 func ColAndIdxExistenceMapIsEqual(m1, m2 *ColAndIdxExistenceMap) bool {
@@ -284,7 +282,6 @@ func NewHistColl(id int64, havePhysicalID bool, realtimeCnt, modifyCnt int64, co
 		UniqueID2colInfoID: make(map[int64]int64),
 		MVIdx2Columns:      make(map[int64][]*expression.Column),
 	}
-}
 
 // NewHistCollWithColsAndIdxs creates a new HistColl with given columns and indices.
 func NewHistCollWithColsAndIdxs(id int64, havePhysicalID bool, realtimeCnt, modifyCnt int64, cols map[int64]*Column, idxs map[int64]*Index) *HistColl {
@@ -300,7 +297,6 @@ func NewHistCollWithColsAndIdxs(id int64, havePhysicalID bool, realtimeCnt, modi
 		UniqueID2colInfoID: make(map[int64]int64),
 		MVIdx2Columns:      make(map[int64][]*expression.Column),
 	}
-}
 
 // SetCol sets the column with the given id.
 func (coll *HistColl) SetCol(id int64, col *Column) {
@@ -330,8 +326,6 @@ func (coll *HistColl) ForEachColumnImmutable(f func(int64, *Column) bool) {
 		if f(id, col) {
 			return
 		}
-	}
-}
 
 // ForEachIndexImmutable iterates all columns in the HistColl.
 // The bool return value of f is used to control the iteration. If f returns true, the iteration will be stopped.
@@ -341,8 +335,6 @@ func (coll *HistColl) ForEachIndexImmutable(f func(int64, *Index) bool) {
 		if f(id, idx) {
 			return
 		}
-	}
-}
 
 // ColNum returns the number of columns in the HistColl.
 func (coll *HistColl) ColNum() int {
@@ -413,7 +405,6 @@ func (coll *HistColl) SetAllIndexFullLoadForBootstrap() {
 	for _, idx := range coll.indices {
 		idx.StatsLoadedStatus = NewStatsFullLoadStatus()
 	}
-}
 
 // CalcPreScalar calculates the pre-calculated scalar for all columns and indices.
 func (coll *HistColl) CalcPreScalar() {
@@ -429,7 +420,6 @@ func (coll *HistColl) CalcPreScalar() {
 		}
 		col.PreCalculateScalar()
 	}
-}
 
 // DropEvicted will drop the unnecessary data for all columns and indices. It's triggerred by stats cache.
 func (coll *HistColl) DropEvicted() {
@@ -445,7 +435,6 @@ func (coll *HistColl) DropEvicted() {
 		}
 		idx.DropUnnecessaryData()
 	}
-}
 
 // TableMemoryUsage records tbl memory usage
 type TableMemoryUsage struct {
@@ -592,14 +581,12 @@ func (t *Table) MemoryUsage() *TableMemoryUsage {
 			tMemUsage.ColumnsMemUsage[colMemUsage.ItemID()] = colMemUsage
 			tMemUsage.TotalMemUsage += colMemUsage.TotalMemoryUsage()
 		}
-	}
 	for _, index := range t.indices {
 		if index != nil {
 			idxMemUsage := index.MemoryUsage()
 			tMemUsage.IndicesMemUsage[idxMemUsage.ItemID()] = idxMemUsage
 			tMemUsage.TotalMemUsage += idxMemUsage.TotalMemoryUsage()
 		}
-	}
 	return tMemUsage
 }
 
@@ -700,7 +687,6 @@ func (t *Table) IndexStartWithColumn(colName string) *Index {
 		if index.Info.Columns[0].Name.L == colName {
 			return index
 		}
-	}
 	return nil
 }
 
@@ -710,7 +696,6 @@ func (t *Table) ColumnByName(colName string) *Column {
 		if c.Info.Name.L == colName {
 			return c
 		}
-	}
 	return nil
 }
 
@@ -771,7 +756,6 @@ func (coll *HistColl) GetAnalyzeRowCount() float64 {
 		if col != nil && col.IsFullLoad() {
 			return col.TotalRowCount()
 		}
-	}
 	ids = maps.Keys(coll.indices)
 	slices.Sort(ids)
 	for _, id := range ids {
@@ -785,7 +769,6 @@ func (coll *HistColl) GetAnalyzeRowCount() float64 {
 		if idx.IsFullLoad() {
 			return idx.TotalRowCount()
 		}
-	}
 	return -1
 }
 
@@ -902,12 +885,10 @@ func (t *Table) IsInitialized() bool {
 		if col != nil && col.IsStatsInitialized() {
 			return true
 		}
-	}
 	for _, idx := range t.indices {
 		if idx != nil && idx.IsStatsInitialized() {
 			return true
 		}
-	}
 	return false
 }
 
@@ -943,7 +924,6 @@ func (coll *HistColl) ID2UniqueID(columns []*expression.Column) *HistColl {
 		if ok {
 			cols[col.UniqueID] = colHist
 		}
-	}
 	newColl := &HistColl{
 		PhysicalID:     coll.PhysicalID,
 		HavePhysicalID: coll.HavePhysicalID,
@@ -971,7 +951,6 @@ func (coll *HistColl) GenerateHistCollFromColumnInfo(tblInfo *model.TableInfo, c
 		if ok {
 			newColHistMap[uniqueID] = colHist
 		}
-	}
 	for _, idxInfo := range tblInfo.Indices {
 		idxID2idxInfo[idxInfo.ID] = idxInfo
 	}
@@ -1004,8 +983,6 @@ func (coll *HistColl) GenerateHistCollFromColumnInfo(tblInfo *model.TableInfo, c
 			if ok {
 				mvIdx2Columns[id] = cols
 			}
-		}
-	}
 	for _, idxIDs := range colID2IdxIDs {
 		slices.Sort(idxIDs)
 	}
@@ -1056,9 +1033,6 @@ func PseudoTable(tblInfo *model.TableInfo, allowTriggerLoading bool, allowFillHi
 					IsHandle:   tblInfo.PKIsHandle && mysql.HasPriKeyFlag(col.GetFlag()),
 					Histogram:  *NewHistogram(col.ID, 0, 0, 0, &col.FieldType, 0, 0),
 				}
-			}
-		}
-	}
 	for _, idx := range tblInfo.Indices {
 		if idx.State == model.StatePublic {
 			t.ColAndIdxExistenceMap.InsertIndex(idx.ID, false)
@@ -1068,9 +1042,6 @@ func PseudoTable(tblInfo *model.TableInfo, allowTriggerLoading bool, allowFillHi
 					Info:       idx,
 					Histogram:  *NewHistogram(idx.ID, 0, 0, 0, types.NewFieldType(mysql.TypeBlob), 0, 0),
 				}
-			}
-		}
-	}
 	return t
 }
 

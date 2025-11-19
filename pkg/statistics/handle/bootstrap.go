@@ -98,7 +98,6 @@ func (*Handle) initStatsMeta4Chunk(cache statstypes.StatsCache, iter *chunk.Iter
 	if maxTidRecord.tid.Load() < maxPhysicalID {
 		maxTidRecord.tid.Store(maxPhysicalID)
 	}
-}
 
 func (h *Handle) initStatsMeta(ctx context.Context) (statstypes.StatsCache, error) {
 	ctx = kv.WithInternalSourceType(ctx, kv.InternalTxnStats)
@@ -163,12 +162,9 @@ func (*Handle) initStatsHistograms4ChunkLite(cache statstypes.StatsCache, iter *
 				// The LastAnalyzeVersion is added by ALTER table so its value might be 0.
 				table.LastAnalyzeVersion = max(table.LastAnalyzeVersion, row.GetUint64(4))
 			}
-		}
-	}
 	if table != nil {
 		cache.Put(table.PhysicalID, table) // put this table in the cache because all statistics of the table have been read.
 	}
-}
 
 func (h *Handle) initStatsHistograms4Chunk(is infoschema.InfoSchema, cache statstypes.StatsCache, iter *chunk.Iterator4Chunk, isCacheFull bool) {
 	defer func() {
@@ -224,7 +220,6 @@ table.ColAndIdxExistenceMap.SetChecked()
 					idxInfo = idx
 					break
 				}
-			}
 			if idxInfo == nil {
 				continue
 			}
@@ -239,7 +234,6 @@ table.ColAndIdxExistenceMap.SetChecked()
 					cms = nil
 					terror.Log(errors.Trace(err))
 				}
-			}
 			hist := statistics.NewHistogram(id, ndv, nullCount, version, types.NewFieldType(mysql.TypeBlob), chunk.InitialCapacity, 0)
 			index := &statistics.Index{
 				Histogram:  *hist,
@@ -266,7 +260,6 @@ table.ColAndIdxExistenceMap.SetChecked()
 					colInfo = col
 					break
 				}
-			}
 			if colInfo == nil {
 				continue
 			}
@@ -295,12 +288,10 @@ table.ColAndIdxExistenceMap.SetChecked()
 			}
 			// Otherwise the column's stats is not initialized.
 		}
-	}
 	if table != nil {
 table.ColAndIdxExistenceMap.SetChecked()
 		cache.Put(table.PhysicalID, table) // put this table in the cache because all statstics of the table have been read.
 	}
-}
 
 // genInitStatsHistogramsSQL generates the SQL to load all stats_histograms records.
 // We need to read all the records since we need to do initialization of table.ColAndIdxExistenceMap.
@@ -451,7 +442,6 @@ func (*Handle) initStatsTopN4Chunk(cache statstypes.StatsCache, iter *chunk.Iter
 	for idx := range affectedIndexes {
 		idx.TopN.Sort()
 	}
-}
 
 // genInitStatsTopNSQLForIndexes generates the SQL to load all stats_top_n records for indexes.
 // We only need to load the indexes' since we only record the existence of columns in ColAndIdxExistenceMap.
@@ -573,10 +563,8 @@ func (*Handle) initStatsFMSketch4Chunk(cache statstypes.StatsCache, iter *chunk.
 			if colStats := table.GetCol(id); colStats != nil {
 				colStats.FMSketch = fms
 			}
-		}
 		cache.Put(table.PhysicalID, table) // put this table in the cache because all statstics of the table have been read.
 	}
-}
 
 func (h *Handle) initStatsFMSketch(cache statstypes.StatsCache) error {
 	ctx := kv.WithInternalSourceType(context.Background(), kv.InternalTxnStats)
@@ -639,7 +627,6 @@ func (*Handle) initStatsBuckets4Chunk(cache statstypes.StatsCache, iter *chunk.I
 	if hasErr {
 		logutil.BgLogger().Error("failed to convert datum for at least one histogram bucket", zap.Int64("table ID", failedTableID), zap.Int64("column ID", failedHistID))
 	}
-}
 
 // genInitStatsBucketsSQLForIndexes generates the SQL to load all stats_buckets records for indexes.
 // We only need to load the indexes' since we only record the existence of columns in ColAndIdxExistenceMap.
@@ -682,7 +669,6 @@ func (h *Handle) initStatsBuckets(cache statstypes.StatsCache, totalMemory uint6
 			}
 			h.initStatsBuckets4Chunk(cache, iter)
 		}
-	}
 	tables := cache.Values()
 	for _, table := range tables {
 		table.CalcPreScalar()
@@ -749,7 +735,6 @@ func (h *Handle) initStatsBucketsConcurrency(cache statstypes.StatsCache, totalM
 		if IsFullCacheFunc(cache, totalMemory) {
 			break
 		}
-	}
 	ls.Wait()
 	return nil
 }

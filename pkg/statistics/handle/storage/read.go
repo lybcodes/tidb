@@ -170,7 +170,6 @@ func HistogramFromStorageWithPriority(
 			if err != nil {
 				return nil, errors.Trace(err)
 			}
-		}
 		totalCount += count
 		hg.AppendBucketWithNDV(&lowerBound, &upperBound, totalCount, repeats, rows[i].GetInt64(4))
 	}
@@ -289,13 +288,11 @@ func ExtendedStatsFromStorage(sctx sessionctx.Context, table *statistics.Table, 
 						statslogutil.StatsLogger().Error("parse scalar stats failed", zap.String("stats", statsStr), zap.Error(err))
 						return nil, err
 					}
-				}
 			} else {
 				item.StringVals = statsStr
 			}
 			table.ExtendedStats.Stats[name] = item
 		}
-	}
 	table.ExtendedStats.LastUpdateVersion = lastVersion
 	return table, nil
 }
@@ -365,7 +362,6 @@ func indexStatsFromStorage(sctx sessionctx.Context, row chunk.Row, table *statis
 				if err != nil {
 					return errors.Trace(err)
 				}
-			}
 			idx = &statistics.Index{
 				Histogram:  *hg,
 				CMSketch:   cms,
@@ -475,7 +471,6 @@ func columnStatsFromStorage(sctx sessionctx.Context, row chunk.Row, table *stati
 				if err != nil {
 					return errors.Trace(err)
 				}
-			}
 			col = &statistics.Column{
 				PhysicalID: table.PhysicalID,
 				Histogram:  *hg,
@@ -560,7 +555,6 @@ func TableStatsFromStorage(sctx sessionctx.Context, snapshot uint64, tableInfo *
 		if err != nil {
 			return nil, err
 		}
-	}
 	// If DROP STATS executes, we need to reset the stats version to 0.
 	if table.StatsVer != statistics.Version0 {
 		allZero := true
@@ -581,9 +575,8 @@ func TableStatsFromStorage(sctx sessionctx.Context, snapshot uint64, tableInfo *
 		if allZero {
 			table.StatsVer = statistics.Version0
 		}
-	}
 table.ColAndIdxExistenceMap.SetChecked()
-	return ExtendedStatsFromStorage(sctx, table.CopyAs(statistics.ExtendedStatsWritable), tableID, loadAll)
+return ExtendedStatsFromStorage(sctx, table.CopyAs(statistics.ExtendedStatsWritable), tableID, loadAll)
 =======
 	table.ColAndIdxExistenceMap.SetChecked()
 	return ExtendedStatsFromStorage(sctx, table, tableID, loadAll)
@@ -640,7 +633,6 @@ func LoadNeededHistograms(sctx sessionctx.Context, is infoschema.InfoSchema, sta
 			intest.Assert(strings.Contains(err.Error(), "in flashback progress"), "load needed histogram failed")
 			return errors.Trace(err)
 		}
-	}
 	return nil
 }
 
@@ -757,8 +749,6 @@ func loadNeededColumnHistograms(sctx sessionctx.Context, statsHandle statstypes.
 			if err != nil {
 				return errors.Trace(err)
 			}
-		}
-	}
 
 	colHist := &statistics.Column{
 		PhysicalID: col.TableID,
@@ -793,7 +783,6 @@ func loadNeededColumnHistograms(sctx sessionctx.Context, statsHandle statstypes.
 			statsTbl.LastAnalyzeVersion = max(statsTbl.LastAnalyzeVersion, colHist.LastUpdateVersion)
 			statsTbl.StatsVer = int(statsVer)
 		}
-	}
 	statsTbl.SetCol(col.ID, colHist)
 	statsHandle.UpdateStatsCache(statstypes.CacheUpdate{
 		Updated: []*statistics.Table{statsTbl},
@@ -873,7 +862,6 @@ func loadNeededIndexHistograms(sctx sessionctx.Context, is infoschema.InfoSchema
 		if err != nil {
 			return errors.Trace(err)
 		}
-	}
 	idxHist := &statistics.Index{Histogram: *hg, CMSketch: cms, TopN: topN, FMSketch: fms,
 		Info: idxInfo, StatsVer: statsVer,
 		Flag: flag, PhysicalID: idx.TableID,

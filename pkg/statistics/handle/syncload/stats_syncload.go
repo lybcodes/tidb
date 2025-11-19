@@ -92,7 +92,6 @@ func (s *statsSyncLoad) SendLoadRequests(sc *stmtctx.StatementContext, neededHis
 			if len(remainedItems) != count {
 				panic("remained items count wrong")
 			}
-		}
 	})
 	if len(remainedItems) <= 0 {
 		return nil
@@ -173,7 +172,6 @@ func (*statsSyncLoad) SyncWaitStatsLoad(sc *stmtctx.StatementContext) error {
 			metrics.SyncLoadTimeoutCounter.Inc()
 			return errors.New("sync load stats timeout")
 		}
-	}
 	if len(resultCheckMap) == 0 {
 		metrics.SyncLoadHistogram.Observe(float64(time.Since(sc.StatsLoad.LoadStartTime).Milliseconds()))
 		return nil
@@ -200,7 +198,6 @@ func (s *statsSyncLoad) removeHistLoadedColumns(neededItems []model.StatsLoadIte
 		if loadNeeded {
 			remainedItems = append(remainedItems, item)
 		}
-	}
 	return remainedItems
 }
 
@@ -253,9 +250,6 @@ func (s *statsSyncLoad) SubLoadWorker(sctx sessionctx.Context, exit chan struct{
 				time.Sleep(s.statsHandle.Lease()/10 + time.Duration(r)*time.Microsecond)
 				continue
 			}
-		}
-	}
-}
 
 // HandleOneTask handles last task if not nil, else handle a new task from chan, and return current task if fail somewhere.
 //   - If the task is handled successfully, return nil, nil.
@@ -369,17 +363,15 @@ func (s *statsSyncLoad) handleOneItemTask(task *statstypes.NeededItemTask) (err 
 			if skip {
 				return nil
 			}
-		}
 
 		// If this column is not analyzed yet and we don't have it in memory.
 		// We create a fake one for the pseudo estimation.
 		// Otherwise, it will trigger the sync/async load again, even if the column has not been analyzed.
 if loadNeeded && !analyzed {
-			wrapper.col = statistics.EmptyColumn(item.TableID, isPkIsHandle, wrapper.colInfo)
-			s.updateCachedItem(item, wrapper.col, wrapper.idx, task.Item.FullLoad)
+	wrapper.col = statistics.EmptyColumn(item.TableID, isPkIsHandle, wrapper.colInfo)
+	s.updateCachedItem(item, wrapper.col, wrapper.idx, task.Item.FullLoad)
 			return nil
 		}
-	}
 	failpoint.Inject("handleOneItemTaskPanic", nil)
 	t := time.Now()
 	needUpdate := false
@@ -398,7 +390,6 @@ if loadNeeded && !analyzed {
 		if wrapper.colInfo != nil {
 			needUpdate = true
 		}
-	}
 	metrics.ReadStatsHistogram.Observe(float64(time.Since(t).Milliseconds()))
 	if needUpdate {
 s.updateCachedItem(tblInfo, item, wrapper.col, wrapper.idx, task.Item.FullLoad)
@@ -447,7 +438,6 @@ func (*statsSyncLoad) readStatsForOneItem(sctx sessionctx.Context, item model.Ta
 			if err != nil {
 				return nil, errors.Trace(err)
 			}
-		}
 		cms, topN, err = storage.CMSketchAndTopNFromStorageWithHighPriority(sctx, item.TableID, isIndexFlag, item.ID, statsVer)
 		if err != nil {
 			return nil, errors.Trace(err)
@@ -457,8 +447,6 @@ func (*statsSyncLoad) readStatsForOneItem(sctx sessionctx.Context, item model.Ta
 			if err != nil {
 				return nil, errors.Trace(err)
 			}
-		}
-	}
 	if item.IsIndex {
 		idxHist := &statistics.Index{
 			Histogram:  *hg,
@@ -476,7 +464,6 @@ func (*statsSyncLoad) readStatsForOneItem(sctx sessionctx.Context, item model.Ta
 			} else {
 				idxHist.StatsLoadedStatus = statistics.NewStatsAllEvictedStatus()
 			}
-		}
 		lastAnalyzePos.Copy(&idxHist.LastAnalyzePos)
 		w.idx = idxHist
 	} else {
@@ -496,7 +483,6 @@ func (*statsSyncLoad) readStatsForOneItem(sctx sessionctx.Context, item model.Ta
 			} else {
 				colHist.StatsLoadedStatus = statistics.NewStatsAllEvictedStatus()
 			}
-		}
 		w.col = colHist
 	}
 	return w, nil
@@ -539,9 +525,6 @@ func (s *statsSyncLoad) drainColTask(sctx sessionctx.Context, exit chan struct{}
 				// NeededColumnsCh is empty now, handle task from TimeoutColumnsCh
 				return task, nil
 			}
-		}
-	}
-}
 
 // writeToTimeoutChan writes in a nonblocking way, and if the channel queue is full, it's ok to drop the task.
 func (*statsSyncLoad) writeToTimeoutChan(taskCh chan *statstypes.NeededItemTask, task *statstypes.NeededItemTask) {
@@ -549,14 +532,14 @@ func (*statsSyncLoad) writeToTimeoutChan(taskCh chan *statstypes.NeededItemTask,
 	case taskCh <- task:
 	default:
 	}
-}
 
 // updateCachedItem updates the column/index hist to global statsCache.
 func (s *statsSyncLoad) updateCachedItem(tblInfo *model.TableInfo, item model.TableItemID, colHist *statistics.Column, idxHist *statistics.Index, fullLoaded bool) (updated bool) {
 	s.mutexForStatsCache.Lock()
 	defer s.mutexForStatsCache.Unlock()
+	// Add logic here to update the cached item based on the provided parameters
+}
 =======
-func (s *statsSyncLoad) updateCachedItem(tblInfo *model.TableInfo, item model.TableItemID, colHist *statistics.Column, idxHist *statistics.Index, fullLoaded bool) (updated bool) {
 	s.StatsLoad.Lock()
 	defer s.StatsLoad.Unlock()
 >>>>>>> origin/release-8.5
@@ -566,19 +549,17 @@ func (s *statsSyncLoad) updateCachedItem(tblInfo *model.TableInfo, item model.Ta
 	if !ok {
 		return false
 	}
-It seems like the conflict you provided is incomplete or missing the actual code content. Could you please provide the full conflicting code so I can resolve it for you?
+It seems the conflict you provided does not contain any actual code to analyze or merge. Please provide the full conflicting code so I can resolve it for you.
 	if !tbl.ColAndIdxExistenceMap.Checked() {
 		tbl = tbl.Copy()
 		for _, col := range tbl.HistColl.GetColSlice() {
 			if tblInfo.FindColumnByID(col.ID) == nil {
 				tbl.DelCol(col.ID)
 			}
-		}
 		for _, idx := range tbl.HistColl.GetIdxSlice() {
 			if tblInfo.FindIndexByID(idx.ID) == nil {
 				tbl.DelIdx(idx.ID)
 			}
-		}
 		tbl.ColAndIdxExistenceMap.SetChecked()
 	}
 It seems you haven't provided the actual conflicting code. Please share the full code snippet with the conflicting sections so I can resolve it for you.
@@ -625,7 +606,6 @@ tbl = tbl.CopyAs(statistics.IndexMapWritable)
 			// All the objects shares the same stats version. Update it here.
 			tbl.StatsVer = statistics.Version0
 		}
-	}
 	s.statsHandle.UpdateStatsCache(statstypes.CacheUpdate{
 		Updated: []*statistics.Table{tbl},
 	})
