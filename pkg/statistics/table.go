@@ -96,6 +96,9 @@ type Table struct {
 // ColAndIdxExistenceMap is the meta map for statistics.Table.
 // It can tell whether a column/index really has its statistics. So we won't send useless kv request when we do online stats loading.
 type ColAndIdxExistenceMap struct {
+	// We use this map to decide the stats status of a column/index. So it should be fully initialized before we check whether a column/index is analyzed or not.
+	checked bool
+}
 	colAnalyzed map[int64]bool
 	idxAnalyzed map[int64]bool
 }
@@ -110,6 +113,15 @@ func (m *ColAndIdxExistenceMap) DeleteIdxNotFound(id int64) {
 	delete(m.idxAnalyzed, id)
 }
 
+// Checked returns whether the map has been checked.
+func (m *ColAndIdxExistenceMap) Checked() bool {
+	return m.checked
+}
+
+// SetChecked sets the map as checked.
+func (m *ColAndIdxExistenceMap) SetChecked() {
+	m.checked = true
+}
 // HasAnalyzed checks whether a column/index stats exists and it has stats.
 // TODO: the map should only keep the analyzed cols.
 // There's three possible status of column/index's statistics:
@@ -870,7 +882,7 @@ func (t *Table) ColumnIsLoadNeeded(id int64, fullLoad bool) (*Column, bool, bool
 func (t *Table) IndexIsLoadNeeded(id int64) (*Index, bool) {
 	idx, ok := t.indices[id]
 	// If the index is not in the memory, and we have its stats in the storage. We need to trigger the load.
-	if !ok && t.ColAndIdxExistenceMap.HasAnalyzed(id, true) {
+if !ok && (t.ColAndIdxExistenceMap.HasAnalyzed(id, true) || !t.ColAndIdxExistenceMap.Checked()) {
 		return nil, true
 	}
 	// If the index is in the memory, we check its embedded func.

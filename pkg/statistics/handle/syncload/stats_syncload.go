@@ -374,7 +374,7 @@ func (s *statsSyncLoad) handleOneItemTask(task *statstypes.NeededItemTask) (err 
 		// If this column is not analyzed yet and we don't have it in memory.
 		// We create a fake one for the pseudo estimation.
 		// Otherwise, it will trigger the sync/async load again, even if the column has not been analyzed.
-		if !analyzed {
+if loadNeeded && !analyzed {
 			wrapper.col = statistics.EmptyColumn(item.TableID, isPkIsHandle, wrapper.colInfo)
 			s.updateCachedItem(item, wrapper.col, wrapper.idx, task.Item.FullLoad)
 			return nil
@@ -401,7 +401,7 @@ func (s *statsSyncLoad) handleOneItemTask(task *statstypes.NeededItemTask) (err 
 	}
 	metrics.ReadStatsHistogram.Observe(float64(time.Since(t).Milliseconds()))
 	if needUpdate {
-		s.updateCachedItem(item, wrapper.col, wrapper.idx, task.Item.FullLoad)
+s.updateCachedItem(tblInfo, item, wrapper.col, wrapper.idx, task.Item.FullLoad)
 	}
 	return nil
 }
@@ -552,22 +552,21 @@ func (*statsSyncLoad) writeToTimeoutChan(taskCh chan *statstypes.NeededItemTask,
 }
 
 // updateCachedItem updates the column/index hist to global statsCache.
-<<<<<<< HEAD
+func (s *statsSyncLoad) updateCachedItem(tblInfo *model.TableInfo, item model.TableItemID, colHist *statistics.Column, idxHist *statistics.Index, fullLoaded bool) (updated bool) {
+	s.mutexForStatsCache.Lock()
+	defer s.mutexForStatsCache.Unlock()
+=======
 func (s *statsSyncLoad) updateCachedItem(tblInfo *model.TableInfo, item model.TableItemID, colHist *statistics.Column, idxHist *statistics.Index, fullLoaded bool) (updated bool) {
 	s.StatsLoad.Lock()
 	defer s.StatsLoad.Unlock()
-=======
-func (s *statsSyncLoad) updateCachedItem(item model.TableItemID, colHist *statistics.Column, idxHist *statistics.Index, fullLoaded bool) (updated bool) {
-	s.mutexForStatsCache.Lock()
-	defer s.mutexForStatsCache.Unlock()
->>>>>>> 3e7f31765eb (stats: remove ColAndIdxExistenceMap checked flag (#63626))
+>>>>>>> origin/release-8.5
 	// Reload the latest stats cache, otherwise the `updateStatsCache` may fail with high probability, because functions
 	// like `GetPartitionStats` called in `fmSketchFromStorage` would have modified the stats cache already.
 	tbl, ok := s.statsHandle.Get(item.TableID)
 	if !ok {
 		return false
 	}
-<<<<<<< HEAD
+It seems like the conflict you provided is incomplete or missing the actual code content. Could you please provide the full conflicting code so I can resolve it for you?
 	if !tbl.ColAndIdxExistenceMap.Checked() {
 		tbl = tbl.Copy()
 		for _, col := range tbl.HistColl.GetColSlice() {
@@ -582,8 +581,9 @@ func (s *statsSyncLoad) updateCachedItem(item model.TableItemID, colHist *statis
 		}
 		tbl.ColAndIdxExistenceMap.SetChecked()
 	}
+It seems you haven't provided the actual conflicting code. Please share the full code snippet with the conflicting sections so I can resolve it for you.
 =======
->>>>>>> 3e7f31765eb (stats: remove ColAndIdxExistenceMap checked flag (#63626))
+>>>>>>> origin/release-8.5
 	if !item.IsIndex && colHist != nil {
 		c := tbl.GetCol(item.ID)
 		// - If the stats is fully loaded,
@@ -591,11 +591,10 @@ func (s *statsSyncLoad) updateCachedItem(item model.TableItemID, colHist *statis
 		if c != nil && (c.IsFullLoad() || !fullLoaded) {
 			return false
 		}
-<<<<<<< HEAD
-		tbl = tbl.Copy()
+tbl = tbl.CopyAs(statistics.ColumnMapWritable)
 =======
-		tbl = tbl.CopyAs(statistics.ColumnMapWritable)
->>>>>>> 3e7f31765eb (stats: remove ColAndIdxExistenceMap checked flag (#63626))
+		tbl = tbl.Copy()
+>>>>>>> origin/release-8.5
 		tbl.SetCol(item.ID, colHist)
 
 		// If the column is analyzed we refresh the map for the possible change.
@@ -615,11 +614,10 @@ func (s *statsSyncLoad) updateCachedItem(item model.TableItemID, colHist *statis
 		if index != nil && (index.IsFullLoad() || !fullLoaded) {
 			return true
 		}
-<<<<<<< HEAD
-		tbl = tbl.Copy()
+tbl = tbl.CopyAs(statistics.IndexMapWritable)
 =======
-		tbl = tbl.CopyAs(statistics.IndexMapWritable)
->>>>>>> 3e7f31765eb (stats: remove ColAndIdxExistenceMap checked flag (#63626))
+		tbl = tbl.Copy()
+>>>>>>> origin/release-8.5
 		tbl.SetIdx(item.ID, idxHist)
 		// If the index is analyzed we refresh the map for the possible change.
 		if idxHist.IsAnalyzed() {
