@@ -54,7 +54,7 @@ import (
 	"github.com/pingcap/tidb/pkg/util/dbterror/plannererrors"
 	utilhint "github.com/pingcap/tidb/pkg/util/hint"
 	"github.com/pingcap/tidb/pkg/util/logutil"
-	"github.com/pingcap/tidb/pkg/util/set"
+"github.com/pingcap/tidb/pkg/util/set"
 	"github.com/pingcap/tidb/pkg/util/tracing"
 	"github.com/pingcap/tipb/go-tipb"
 	"go.uber.org/atomic"
@@ -1181,26 +1181,18 @@ func disableReuseChunkIfNeeded(sctx base.PlanContext, plan base.PhysicalPlan) {
 	if !sctx.GetSessionVars().IsAllocValid() {
 		return
 	}
-
-	if checkOverlongColType(sctx, plan) {
+if checkOverlongColType(sctx, plan) {
 		return
 	}
-
 	for _, child := range plan.Children() {
 		disableReuseChunkIfNeeded(sctx, child)
 	}
 }
 
 // checkOverlongColType Check if read field type is long field.
-func checkOverlongColType(sctx base.PlanContext, plan base.PhysicalPlan) bool {
-	if plan == nil {
-		return false
-	}
-	switch plan.(type) {
-	case *PhysicalTableReader, *PhysicalIndexReader,
-		*PhysicalIndexLookUpReader, *PhysicalIndexMergeReader, *PointGetPlan:
-		if existsOverlongType(plan.Schema()) {
-			sctx.GetSessionVars().ClearAlloc(nil, false)
+case *physicalop.PhysicalTableReader, *physicalop.PhysicalIndexReader,
+		*physicalop.PhysicalIndexLookUpReader, *physicalop.PhysicalIndexMergeReader:
+		if existsOverlongType(plan.Schema(), false) {
 			return true
 		}
 	}
