@@ -583,11 +583,16 @@ func TableStatsFromStorage(sctx sessionctx.Context, snapshot uint64, tableInfo *
 		}
 	}
 <<<<<<< HEAD
+<<<<<<< HEAD
 	table.ColAndIdxExistenceMap.SetChecked()
 	return ExtendedStatsFromStorage(sctx, table, tableID, loadAll)
 =======
 	return ExtendedStatsFromStorage(sctx, table.CopyAs(statistics.ExtendedStatsWritable), tableID, loadAll)
 >>>>>>> 3e7f31765eb (stats: remove ColAndIdxExistenceMap checked flag (#63626))
+=======
+	table.ColAndIdxExistenceMap.SetChecked()
+	return ExtendedStatsFromStorage(sctx, table, tableID, loadAll)
+>>>>>>> origin/release-8.5
 }
 
 // LoadHistogram will load histogram from storage.
