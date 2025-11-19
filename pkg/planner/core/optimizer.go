@@ -54,9 +54,9 @@ import (
 	"github.com/pingcap/tidb/pkg/util/dbterror/plannererrors"
 	utilhint "github.com/pingcap/tidb/pkg/util/hint"
 	"github.com/pingcap/tidb/pkg/util/logutil"
-	"github.com/pingcap/tidb/pkg/util/memory"
-	"github.com/pingcap/tidb/pkg/util/set"
-	"github.com/pingcap/tidb/pkg/util/size"
+"github.com/pingcap/tidb/pkg/util/memory"
+"github.com/pingcap/tidb/pkg/util/set"
+"github.com/pingcap/tidb/pkg/util/size"
 	"github.com/pingcap/tidb/pkg/util/tracing"
 	"github.com/pingcap/tipb/go-tipb"
 	"go.uber.org/atomic"
@@ -1183,7 +1183,7 @@ func disableReuseChunkIfNeeded(sctx base.PlanContext, plan base.PhysicalPlan) {
 	if !sctx.GetSessionVars().IsAllocValid() {
 		return
 	}
-	if disableReuseChunk, continueIterating := checkOverlongColType(sctx, plan); disableReuseChunk || !continueIterating {
+if disableReuseChunk, _ := checkOverlongColType(sctx, plan); disableReuseChunk {
 		return
 	}
 	for _, child := range plan.Children() {
@@ -1197,19 +1197,8 @@ func checkOverlongColType(sctx base.PlanContext, plan base.PhysicalPlan) (skipRe
 		return false, false
 	}
 	switch plan.(type) {
-<<<<<<< HEAD
-	case *PhysicalTableReader, *PhysicalIndexReader,
-		*PhysicalIndexLookUpReader, *PhysicalIndexMergeReader, *PointGetPlan:
-		if existsOverlongType(plan.Schema()) {
-=======
 	case *physicalop.PhysicalTableReader, *physicalop.PhysicalIndexReader,
-		*physicalop.PhysicalIndexLookUpReader, *physicalop.PhysicalIndexMergeReader:
-		if existsOverlongType(plan.Schema(), false) {
->>>>>>> d7169b2a324 (planner: PointGet will not skip the reuse chunk with enough total memory (#63921))
-			sctx.GetSessionVars().ClearAlloc(nil, false)
-			return true, false
-		}
-	case *physicalop.PointGetPlan:
+		*physicalop.PhysicalIndexLookUpReader, *physicalop.PhysicalIndexMergeReader, *physicalop.PointGetPlan:
 		if existsOverlongType(plan.Schema(), true) {
 			sctx.GetSessionVars().ClearAlloc(nil, false)
 			return true, false
@@ -1261,21 +1250,38 @@ func existsOverlongType(schema *expression.Schema, pointGet bool) bool {
 			}
 			if pointGet {
 				totalFlen += column.RetType.GetFlen()
-				if checkOverlongTypeForPointGet(totalFlen) {
+				if totalFlen > maxFlenForOverlongType {
 					return true
 				}
 				continue
 			}
+		}
+	}
+	return false
+}
 			return true
 		}
 	}
 	return false
 }
 
-func checkOverlongTypeForPointGet(totalFlen int) bool {
+func checkOverlongTypeForPointGet(totalFlen int, schema *expression.Schema) bool {
 	totalMemory, err := memory.MemTotal()
 	if err != nil || totalMemory <= 0 {
 		return true
+	}
+	if schema != nil {
+		for _, column := range schema.Columns {
+			switch column.RetType.GetType() {
+			case mysql.TypeTinyBlob, mysql.TypeMediumBlob, mysql.TypeLongBlob,
+				mysql.TypeBlob, mysql.TypeJSON, mysql.TypeTiDBVectorFloat32:
+				return true
+			case mysql.TypeVarString, mysql.TypeVarchar:
+				if column.RetType.GetFlen() > 1000 {
+					return true
+				}
+			}
+		}
 	}
 	if totalMemory >= MaxMemoryLimitForOverlongType {
 		if totalFlen <= maxFlenForOverlongType {
@@ -1283,4 +1289,5 @@ func checkOverlongTypeForPointGet(totalFlen int) bool {
 		}
 	}
 	return true
+}
 }
