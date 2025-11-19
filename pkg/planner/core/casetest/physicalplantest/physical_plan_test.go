@@ -37,11 +37,7 @@ import (
 	"github.com/pingcap/tidb/pkg/testkit/testdata"
 	contextutil "github.com/pingcap/tidb/pkg/util/context"
 	"github.com/pingcap/tidb/pkg/util/hint"
-<<<<<<< HEAD
-=======
-	"github.com/pingcap/tidb/pkg/util/mock"
-	"github.com/pingcap/tidb/pkg/util/size"
->>>>>>> d7169b2a324 (planner: PointGet will not skip the reuse chunk with enough total memory (#63921))
+The first conflict (CONFLICT 1) appears to be empty. There is no code or conflict markers provided for it. Therefore, no resolution is needed.
 	"github.com/stretchr/testify/require"
 )
 
