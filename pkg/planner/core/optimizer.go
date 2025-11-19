@@ -54,9 +54,9 @@ import (
 	"github.com/pingcap/tidb/pkg/util/dbterror/plannererrors"
 	utilhint "github.com/pingcap/tidb/pkg/util/hint"
 	"github.com/pingcap/tidb/pkg/util/logutil"
-	"github.com/pingcap/tidb/pkg/util/memory"
-	"github.com/pingcap/tidb/pkg/util/set"
-	"github.com/pingcap/tidb/pkg/util/size"
+"github.com/pingcap/tidb/pkg/util/memory"
+"github.com/pingcap/tidb/pkg/util/set"
+"github.com/pingcap/tidb/pkg/util/size"
 	"github.com/pingcap/tidb/pkg/util/tracing"
 	"github.com/pingcap/tipb/go-tipb"
 	"go.uber.org/atomic"
@@ -134,7 +134,6 @@ func CheckPrivilege(activeRoles []*auth.RoleIdentity, pm privilege.Manager, vs [
 				if hasPriv {
 					break
 				}
-			}
 			if !hasPriv {
 				if v.err == nil {
 					return plannererrors.ErrPrivilegeCheckFail.GenWithStackByArgs(v.dynamicPrivs)
@@ -147,7 +146,6 @@ func CheckPrivilege(activeRoles []*auth.RoleIdentity, pm privilege.Manager, vs [
 			}
 			return v.err
 		}
-	}
 	return nil
 }
 
@@ -179,8 +177,6 @@ func VisitInfo4PrivCheck(ctx context.Context, is infoschema.InfoSchema, node ast
 				if needCheckTmpTablePriv(ctx, is, v) {
 					privVisitInfo = append(privVisitInfo, v)
 				}
-			}
-		}
 	case *ast.DropTableStmt:
 		// Dropping a local temporary table doesn't need any privileges.
 		if stmt.IsView {
@@ -192,9 +188,6 @@ func VisitInfo4PrivCheck(ctx context.Context, is infoschema.InfoSchema, node ast
 					if needCheckTmpTablePriv(ctx, is, v) {
 						privVisitInfo = append(privVisitInfo, v)
 					}
-				}
-			}
-		}
 	case *ast.GrantStmt, *ast.DropSequenceStmt, *ast.DropPlacementPolicyStmt:
 		// Some statements ignore local temporary tables, so they should check the privileges on normal tables.
 		privVisitInfo = vs
@@ -204,8 +197,6 @@ func VisitInfo4PrivCheck(ctx context.Context, is infoschema.InfoSchema, node ast
 			if needCheckTmpTablePriv(ctx, is, v) {
 				privVisitInfo = append(privVisitInfo, v)
 			}
-		}
-	}
 	return
 }
 
@@ -217,7 +208,6 @@ func needCheckTmpTablePriv(ctx context.Context, is infoschema.InfoSchema, v visi
 		if err == nil && tb.Meta().TempTableType == model.TempTableLocal {
 			return false
 		}
-	}
 	return true
 }
 
@@ -237,7 +227,6 @@ func CheckTableLock(ctx tablelock.TableLockReadContext, is infoschema.InfoSchema
 		if err != nil {
 			return err
 		}
-	}
 	return nil
 }
 
@@ -359,7 +348,6 @@ func refineCETrace(sctx base.PlanContext) {
 		logutil.BgLogger().Warn("Failed to find table in infoschema", zap.String("category", "OptimizerTrace"),
 			zap.Int64("table id", rec.TableID))
 	}
-}
 
 // mergeContinuousSelections merge continuous selections which may occur after changing plans.
 func mergeContinuousSelections(p base.PhysicalPlan) {
@@ -373,7 +361,6 @@ func mergeContinuousSelections(p base.PhysicalPlan) {
 			sel.Conditions = append(sel.Conditions, tmp.Conditions...)
 			sel.SetChild(0, tmp.Children()[0])
 		}
-	}
 	for _, child := range p.Children() {
 		mergeContinuousSelections(child)
 	}
@@ -383,7 +370,6 @@ func mergeContinuousSelections(p base.PhysicalPlan) {
 		mergeContinuousSelections(tableReader.tablePlan)
 		tableReader.TablePlans = flattenPushDownPlan(tableReader.tablePlan)
 	}
-}
 
 func postOptimize(ctx context.Context, sctx base.PlanContext, plan base.PhysicalPlan) base.PhysicalPlan {
 	// some cases from update optimize will require avoiding projection elimination.
@@ -437,7 +423,6 @@ func tryEnableLateMaterialization(sctx base.PlanContext, plan base.PhysicalPlan)
 		sc := sctx.GetSessionVars().StmtCtx
 		sc.AppendWarning(errors.NewNoStackError("FastScan is not compatible with late materialization, late materialization is disabled"))
 	}
-}
 
 /*
 *
@@ -477,8 +462,6 @@ func countStarRewrite(plan base.PhysicalPlan) {
 		for _, child := range plan.Children() {
 			countStarRewrite(child)
 		}
-	}
-}
 
 func countStarRewriteInternal(plan base.PhysicalPlan) {
 	// match pattern any agg(count(constant)) -> tablefullscan(tiflash)
@@ -501,7 +484,6 @@ func countStarRewriteInternal(plan base.PhysicalPlan) {
 		if _, ok := aggFunc.Args[0].(*expression.Constant); !ok {
 			return
 		}
-	}
 	physicalTableScan, ok := physicalAgg.Children()[0].(*PhysicalTableScan)
 	if !ok || !physicalTableScan.isFullScan() || physicalTableScan.StoreType != kv.TiFlash || len(physicalTableScan.schema.Columns) != 1 {
 		return
@@ -532,9 +514,6 @@ func rewriteTableScanAndAggArgs(physicalTableScan *PhysicalTableScan, aggFuncs [
 					RetType:  resultColumnInfo.FieldType.Clone(),
 					OrigName: fmt.Sprintf("%s.%s.%s", physicalTableScan.DBName.L, physicalTableScan.Table.Name.L, resultColumnInfo.Name),
 				}
-			}
-		}
-	}
 	// table scan (row_id) -> (not null column)
 	physicalTableScan.Columns[0] = resultColumnInfo
 	physicalTableScan.schema.Columns[0] = resultColumn
@@ -551,7 +530,6 @@ func rewriteTableScanAndAggArgs(physicalTableScan *PhysicalTableScan, aggFuncs [
 		}
 		aggFunc.Args[0] = arg
 	}
-}
 
 // Only for MPP(Window<-[Sort]<-ExchangeReceiver<-ExchangeSender).
 // TiFlashFineGrainedShuffleStreamCount:
@@ -567,7 +545,6 @@ func handleFineGrainedShuffle(ctx context.Context, sctx base.PlanContext, plan b
 		if sctx.GetSessionVars().TiFlashMaxThreads > 0 {
 			streamCount = sctx.GetSessionVars().TiFlashMaxThreads
 		}
-	}
 	// use two separate cluster info to avoid grpc calls cost
 	tiflashServerCountInfo := tiflashClusterInfo{unInitialized, 0}
 	streamCountInfo := tiflashClusterInfo{unInitialized, 0}
@@ -588,8 +565,6 @@ func setupFineGrainedShuffle(ctx context.Context, sctx base.PlanContext, streamC
 		for _, child := range plan.Children() {
 			setupFineGrainedShuffle(ctx, sctx, streamCountInfo, tiflashServerCountInfo, child)
 		}
-	}
-}
 
 type shuffleTarget uint8
 
@@ -650,8 +625,6 @@ func getTiFlashServerMinLogicalCores(ctx context.Context, sctx base.PlanContext,
 			if err == nil && logicalCpus > 0 {
 				minLogicalCores = min(minLogicalCores, uint64(logicalCpus))
 			}
-		}
-	}
 	// No need to check len(serersInfo) == serverCount here, since missing some servers' info won't affect the correctness
 	return true, minLogicalCores
 }
@@ -850,7 +823,6 @@ func setupFineGrainedShuffleInternal(ctx context.Context, sctx base.PlanContext,
 					for _, p := range helper.plans {
 						p.TiFlashFineGrainedShuffleStreamCount = streamCount
 					}
-				}
 			case joinBuild:
 				// Support hashJoin only when shuffle hash keys equals to join keys due to tiflash implementations
 				if len(x.HashCols) != len(helper.joinKeys) {
@@ -864,7 +836,6 @@ func setupFineGrainedShuffleInternal(ctx context.Context, sctx base.PlanContext,
 						applyFlag = false
 						break
 					}
-				}
 				if !applyFlag {
 					break
 				}
@@ -874,9 +845,6 @@ func setupFineGrainedShuffleInternal(ctx context.Context, sctx base.PlanContext,
 					for _, p := range helper.plans {
 						p.TiFlashFineGrainedShuffleStreamCount = streamCount
 					}
-				}
-			}
-		}
 		// exchange sender will break the data partition.
 		helper.clear()
 		setupFineGrainedShuffleInternal(ctx, sctx, x.Children()[0], helper, streamCountInfo, tiflashServerCountInfo)
@@ -885,8 +853,6 @@ func setupFineGrainedShuffleInternal(ctx context.Context, sctx base.PlanContext,
 			childHelper := fineGrainedShuffleHelper{shuffleTarget: unknown, plans: []*physicalop.BasePhysicalPlan{}}
 			setupFineGrainedShuffleInternal(ctx, sctx, child, &childHelper, streamCountInfo, tiflashServerCountInfo)
 		}
-	}
-}
 
 // propagateProbeParents doesn't affect the execution plan, it only sets the probeParents field of a PhysicalPlan.
 // It's for handling the inconsistency between row count in the statsInfo and the recorded actual row count. Please
@@ -921,8 +887,6 @@ func propagateProbeParents(plan base.PhysicalPlan, probeParents []base.PhysicalP
 		for _, child := range plan.Children() {
 			propagateProbeParents(child, probeParents)
 		}
-	}
-}
 
 func enableParallelApply(sctx base.PlanContext, plan base.PhysicalPlan) base.PhysicalPlan {
 	if !sctx.GetSessionVars().EnableParallelApply {
@@ -947,7 +911,6 @@ func enableParallelApply(sctx base.PlanContext, plan base.PhysicalPlan) base.Phy
 			} else {
 				sctx.GetSessionVars().StmtCtx.AppendWarning(errors.NewNoStackError("Some apply operators can not be executed in parallel"))
 			}
-		}
 		// because of the limitation 3, we cannot parallelize Apply operators in this Apply's inner size,
 		// so we only invoke recursively for its outer child.
 		apply.SetChild(outerIdx, enableParallelApply(sctx, apply.Children()[outerIdx]))
@@ -1001,7 +964,6 @@ func logicalOptimize(ctx context.Context, flag uint64, logic base.LogicalPlan) (
 		if planChanged && ok && isLogicalRuleDisabled(interactionRule) {
 			againRuleList = append(againRuleList, interactionRule)
 		}
-	}
 
 	// Trigger the interaction rule
 	for i, rule := range againRuleList {
@@ -1010,7 +972,6 @@ func logicalOptimize(ctx context.Context, flag uint64, logic base.LogicalPlan) (
 		if err != nil {
 			return nil, err
 		}
-	}
 
 	opt.RecordFinalLogicalPlan(logic.BuildPlanTrace)
 	return logic, err
@@ -1089,8 +1050,6 @@ func avoidColumnEvaluatorForProjBelowUnion(p base.PhysicalPlan) base.PhysicalPla
 				if proj, ok := child.(*PhysicalProjection); ok {
 					proj.AvoidColumnEvaluator = true
 				}
-			}
-		}
 		return true
 	})
 	return p
@@ -1136,7 +1095,6 @@ func eliminateUnionScanAndLock(sctx base.PlanContext, p base.PhysicalPlan) base.
 			batchPointGet.Lock = lock
 			batchPointGet.LockWaitTime = waitTime
 		}
-	}
 	return transformPhysicalPlan(p, func(p base.PhysicalPlan) base.PhysicalPlan {
 		if p == physLock {
 			return p.Children()[0]
@@ -1155,7 +1113,6 @@ func iteratePhysicalPlan(p base.PhysicalPlan, f func(p base.PhysicalPlan) bool) 
 	for _, child := range p.Children() {
 		iteratePhysicalPlan(child, f)
 	}
-}
 
 func transformPhysicalPlan(p base.PhysicalPlan, f func(p base.PhysicalPlan) base.PhysicalPlan) base.PhysicalPlan {
 	for i, child := range p.Children() {
@@ -1172,7 +1129,6 @@ func existsCartesianProduct(p base.LogicalPlan) bool {
 		if existsCartesianProduct(child) {
 			return true
 		}
-	}
 	return false
 }
 
@@ -1183,13 +1139,12 @@ func disableReuseChunkIfNeeded(sctx base.PlanContext, plan base.PhysicalPlan) {
 	if !sctx.GetSessionVars().IsAllocValid() {
 		return
 	}
-	if disableReuseChunk, continueIterating := checkOverlongColType(sctx, plan); disableReuseChunk || !continueIterating {
+if disableReuseChunk := checkOverlongColType(sctx, plan); disableReuseChunk {
 		return
 	}
 	for _, child := range plan.Children() {
 		disableReuseChunkIfNeeded(sctx, child)
 	}
-}
 
 // checkOverlongColType Check if read field type is long field.
 func checkOverlongColType(sctx base.PlanContext, plan base.PhysicalPlan) (skipReuseChunk bool, continueIterating bool) {
@@ -1197,15 +1152,13 @@ func checkOverlongColType(sctx base.PlanContext, plan base.PhysicalPlan) (skipRe
 		return false, false
 	}
 	switch plan.(type) {
-<<<<<<< HEAD
 	case *PhysicalTableReader, *PhysicalIndexReader,
 		*PhysicalIndexLookUpReader, *PhysicalIndexMergeReader, *PointGetPlan:
-		if existsOverlongType(plan.Schema()) {
-=======
-	case *physicalop.PhysicalTableReader, *physicalop.PhysicalIndexReader,
-		*physicalop.PhysicalIndexLookUpReader, *physicalop.PhysicalIndexMergeReader:
 		if existsOverlongType(plan.Schema(), false) {
->>>>>>> d7169b2a324 (planner: PointGet will not skip the reuse chunk with enough total memory (#63921))
+			return true, true
+		}
+	return false, true
+}
 			sctx.GetSessionVars().ClearAlloc(nil, false)
 			return true, false
 		}
@@ -1266,21 +1219,40 @@ func existsOverlongType(schema *expression.Schema, pointGet bool) bool {
 				}
 				continue
 			}
+=======
+func checkOverlongColType(sctx base.PlanContext, plan base.PhysicalPlan) bool {
+	if plan == nil {
+		return false
+	}
+	switch plan.(type) {
+	case *PhysicalTableReader, *PhysicalIndexReader,
+		*PhysicalIndexLookUpReader, *PhysicalIndexMergeReader, *PointGetPlan:
+		if existsOverlongType(plan.Schema()) {
+			sctx.GetSessionVars().ClearAlloc(nil, false)
+>>>>>>> origin/release-8.5
 			return true
 		}
-	}
 	return false
 }
 
-func checkOverlongTypeForPointGet(totalFlen int) bool {
+func checkOverlongTypeForPointGet(totalFlen int, schema *expression.Schema) bool {
 	totalMemory, err := memory.MemTotal()
 	if err != nil || totalMemory <= 0 {
 		return true
 	}
+	if schema != nil {
+		for _, column := range schema.Columns {
+			switch column.RetType.GetType() {
+			case mysql.TypeTinyBlob, mysql.TypeMediumBlob, mysql.TypeLongBlob,
+				mysql.TypeBlob, mysql.TypeJSON, mysql.TypeTiDBVectorFloat32:
+				return true
+			case mysql.TypeVarString, mysql.TypeVarchar:
+				if column.RetType.GetFlen() > 1000 {
+					return true
+				}
 	if totalMemory >= MaxMemoryLimitForOverlongType {
 		if totalFlen <= maxFlenForOverlongType {
 			return false
 		}
-	}
 	return true
 }
