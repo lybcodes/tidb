@@ -20,12 +20,11 @@ import (
 
 	"github.com/docker/go-units"
 	"github.com/pingcap/errors"
-<<<<<<< HEAD
-=======
-	"github.com/pingcap/failpoint"
+"github.com/pingcap/failpoint"
 	litstorage "github.com/pingcap/tidb/br/pkg/storage"
 	"github.com/pingcap/tidb/pkg/config/kerneltype"
->>>>>>> 968e31fc3fe (ddl: cancel the job context before rolling back (#64130))
+=======
+>>>>>>> origin/release-8.5
 	"github.com/pingcap/tidb/pkg/disttask/framework/proto"
 	"github.com/pingcap/tidb/pkg/disttask/framework/storage"
 	"github.com/pingcap/tidb/pkg/util/backoff"
@@ -53,7 +52,6 @@ func NotifyTaskChange() {
 	case TaskChangedCh <- struct{}{}:
 	default:
 	}
-}
 
 // GetCPUCountOfNode gets the CPU count of the managed node.
 func GetCPUCountOfNode(ctx context.Context) (int, error) {
@@ -88,8 +86,7 @@ func SubmitTask(ctx context.Context, taskKey string, taskType proto.TaskType, co
 		return nil, err
 	}
 
-	failpoint.InjectCall("afterDXFTaskSubmitted")
-
+failpoint.InjectCall("afterDXFTaskSubmitted")
 	NotifyTaskChange()
 	return task, nil
 }
@@ -168,9 +165,6 @@ func WaitTask(ctx context.Context, id int64, matchFn func(base *proto.TaskBase) 
 			if matchFn(task) {
 				return task, nil
 			}
-		}
-	}
-}
 
 // CancelTask cancels a task.
 func CancelTask(ctx context.Context, taskKey string) error {
@@ -243,7 +237,6 @@ func RunWithRetry(
 			return ctx.Err()
 		case <-time.After(backoffer.Backoff(i)):
 		}
-	}
 	return lastErr
 }
 

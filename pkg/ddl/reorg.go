@@ -244,7 +244,6 @@ func newReorgTableMutateContext(exprCtx exprctx.ExprContext) table.MutateContext
 			variable.DefTiDBShardAllocateStep,
 		),
 	}
-}
 
 func reorgTypeFlagsWithSQLMode(mode mysql.SQLMode) types.Flags {
 	return types.StrictFlags.
@@ -264,7 +263,6 @@ func reorgErrLevelsWithSQLMode(mode mysql.SQLMode) errctx.LevelMap {
 			!mode.HasStrictMode(),
 		),
 	}
-}
 
 func reorgTimeZoneWithTzLoc(tzLoc *model.TimeZoneLocation) (*time.Location, error) {
 	if tzLoc == nil {
@@ -313,11 +311,9 @@ func (rc *reorgCtx) getRowCount() int64 {
  ddl goroutine >---------+
    ^                     |
    |                     |
-   |                     |
    |                     | <---(doneCh)--- f()
  HandleDDLQueue(...)     | <---(regular timeout)
    |                     | <---(ctx done)
-   |                     |
    |                     |
  A more ddl round  <-----+
 */
@@ -356,7 +352,6 @@ func (w *worker) runReorgJob(
 			Location:      &model.TimeZoneLocation{Name: time.UTC.String(), Offset: 0},
 			Version:       model.CurrentReorgMetaVersion,
 		}
-	}
 
 	rc := w.getReorgCtx(job.ID)
 	if rc == nil {
@@ -434,11 +429,9 @@ func (w *worker) runReorgJob(
 			w.mergeWarningsIntoJob(job)
 
 			rc.resetWarnings()
-			failpoint.InjectCall("onRunReorgJobTimeout")
+failpoint.InjectCall("onRunReorgJobTimeout")
 			return jobCtx.genReorgTimeoutErr()
 		}
-	}
-}
 
 func overwriteReorgInfoFromGlobalCheckpoint(w *worker, sess *sess.Session, job *model.Job, reorgInfo *reorgInfo) error {
 	if job.ReorgMeta.ReorgTp != model.ReorgTypeIngest {
@@ -544,7 +537,6 @@ func updateBackfillProgress(w *worker, reorgInfo *reorgInfo, tblInfo *model.Tabl
 		model.ActionAlterTablePartitioning:
 		metrics.GetBackfillProgressByLabel(metrics.LblReorgPartition, reorgInfo.SchemaName, tblInfo.Name.String(), "").Set(progress * 100)
 	}
-}
 
 func getTableTotalCount(w *worker, tblInfo *model.TableInfo) int64 {
 	var ctx sessionctx.Context
@@ -648,7 +640,6 @@ func (r *reorgInfo) UpdateConfigFromSysTbl(ctx context.Context) {
 		r.ReorgMeta.SetBatchSize(latestJob.ReorgMeta.GetBatchSizeOrDefault(int(variable.GetDDLReorgBatchSize())))
 		r.ReorgMeta.SetMaxWriteSpeed(latestJob.ReorgMeta.GetMaxWriteSpeedOrDefault())
 	}
-}
 
 func constructOneRowTableScanPB(
 	physicalTableID int64,
@@ -805,7 +796,6 @@ func buildHandleCols(tbl table.PhysicalTable) []*model.ColumnInfo {
 				handleCols = []*model.ColumnInfo{col}
 				break
 			}
-		}
 	case tblInfo.IsCommonHandle:
 		pkIdx = tables.FindPrimaryIndex(tblInfo)
 		cols := tblInfo.Cols()
@@ -865,7 +855,6 @@ func getTableRange(ctx *ReorgContext, store kv.Storage, tbl table.PhysicalTable,
 		} else {
 			endHandleKey = startHandleKey.Next()
 		}
-	}
 	return
 }
 
@@ -928,14 +917,12 @@ func getReorgInfo(ctx *ReorgContext, jobCtx *jobContext, rh *reorgHandler, job *
 				if idxInfo.Global {
 					pid = tblInfo.ID
 				}
-			}
 			start, end = encodeTempIndexRange(pid, elements[0].ID, elements[len(elements)-1].ID)
 		} else {
 			start, end, err = getTableRange(ctx, jobCtx.store, tb, ver.Ver, job.Priority)
 			if err != nil {
 				return nil, errors.Trace(err)
 			}
-		}
 		logutil.DDLLogger().Info("job get table range",
 			zap.Int64("jobID", job.ID), zap.Int64("physicalTableID", pid),
 			zap.String("startKey", hex.EncodeToString(start)),
@@ -960,7 +947,6 @@ func getReorgInfo(ctx *ReorgContext, jobCtx *jobContext, rh *reorgHandler, job *
 				if err := rh.RemoveReorgElementFailPoint(job); err != nil {
 					failpoint.Return(nil, errors.Trace(err))
 				}
-			}
 		})
 
 		var err error
@@ -975,10 +961,8 @@ func getReorgInfo(ctx *ReorgContext, jobCtx *jobContext, rh *reorgHandler, job *
 				if job.IsCancelling() {
 					return nil, nil
 				}
-			}
 			return &info, errors.Trace(err)
 		}
-	}
 	info.Job = job
 	info.jobCtx = jobCtx
 	info.StartKey = start
@@ -1060,7 +1044,6 @@ func getReorgInfoFromPartitions(ctx *ReorgContext, jobCtx *jobContext, rh *reorg
 			}
 			return &info, errors.Trace(err)
 		}
-	}
 	info.Job = job
 	info.jobCtx = jobCtx
 	info.StartKey = start
@@ -1140,7 +1123,6 @@ func cleanupDDLReorgHandles(job *model.Job, s *sess.Session) {
 		// ignore error, cleanup is not that critical
 		logutil.DDLLogger().Warn("Failed removing the DDL reorg entry in tidb_ddl_reorg", zap.Stringer("job", job), zap.Error(err))
 	}
-}
 
 // GetDDLReorgHandle gets the latest processed DDL reorganize position.
 func (r *reorgHandler) GetDDLReorgHandle(job *model.Job) (element *meta.Element, startKey, endKey kv.Key, physicalTableID int64, err error) {

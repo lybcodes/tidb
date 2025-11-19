@@ -101,7 +101,6 @@ func hasUniqueIndex(indexes []*model.IndexInfo) bool {
 		if idx.Unique {
 			return true
 		}
-	}
 	return false
 }
 
@@ -152,11 +151,11 @@ func (r *readIndexExecutor) RunSubtask(ctx context.Context, subtask *proto.Subta
 	return r.bc.FinishAndUnregisterEngines(ingest.OptCleanData | ingest.OptCheckDup)
 }
 
-<<<<<<< HEAD
 func (r *readIndexExecutor) RealtimeSummary() *execute.SubtaskSummary {
 	return &execute.SubtaskSummary{
 		RowCount: r.curRowCount.Load(),
-=======
+	}
+
 func (r *readIndexStepExecutor) RunSubtask(ctx context.Context, subtask *proto.Subtask) error {
 	logutil.DDLLogger().Info("read index executor run subtask",
 		zap.Bool("use cloud", r.isGlobalSort()))
@@ -173,9 +172,17 @@ func (r *readIndexStepExecutor) RunSubtask(ctx context.Context, subtask *proto.S
 	sm, err := decodeBackfillSubTaskMeta(ctx, r.cloudStorageURI, subtask.Meta)
 	if err != nil {
 		return err
->>>>>>> 968e31fc3fe (ddl: cancel the job context before rolling back (#64130))
 	}
+
+	// Additional logic for RunSubtask can go here
+	return nil
 }
+=======
+func (r *readIndexExecutor) RealtimeSummary() *execute.SubtaskSummary {
+	return &execute.SubtaskSummary{
+		RowCount: r.curRowCount.Load(),
+>>>>>>> origin/release-8.5
+	}
 
 func (r *readIndexExecutor) Cleanup(ctx context.Context) error {
 	tidblogutil.Logger(ctx).Info("read index executor cleanup subtask exec env")
@@ -365,7 +372,6 @@ func newDistTaskRowCntListener(totalRowCnt *atomic.Int64, dbName, tblName, idxNa
 		totalRowCount: totalRowCnt,
 		counter:       counter,
 	}
-}
 
 func (d *distTaskRowCntListener) Written(rowCnt int) {
 	d.totalRowCount.Add(int64(rowCnt))

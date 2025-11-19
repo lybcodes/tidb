@@ -24,8 +24,8 @@ import (
 
 	"github.com/pingcap/tidb/pkg/config"
 	"github.com/pingcap/tidb/pkg/ddl"
-	"github.com/pingcap/tidb/pkg/disttask/framework/proto"
-	"github.com/pingcap/tidb/pkg/errno"
+"github.com/pingcap/tidb/pkg/disttask/framework/proto"
+"github.com/pingcap/tidb/pkg/errno"
 	"github.com/pingcap/tidb/pkg/meta/model"
 	"github.com/pingcap/tidb/pkg/testkit"
 	"github.com/pingcap/tidb/pkg/testkit/testfailpoint"
@@ -101,7 +101,6 @@ func TestMultiSchemaChangeTwoIndexes(t *testing.T) {
 		tk.MustExec(createIndexes[i])
 		tk.MustExec("admin check table t;")
 	}
-}
 
 func TestFixAdminAlterDDLJobs(t *testing.T) {
 	store := realtikvtest.CreateMockStoreAndSetup(t)
@@ -172,7 +171,6 @@ func TestFixAdminAlterDDLJobs(t *testing.T) {
 					jobID = row[0][0].(string)
 					break
 				}
-			}
 			workerCnt := int64(7)
 			batchSize := int64(89)
 			maxWriteSpeed := int64(1011)
@@ -366,7 +364,6 @@ func TestMultiSchemaChangeAnalyzeOnlyOnce(t *testing.T) {
 	checkFn("alter table t modify column a bigint, modify column c char(5), modify column b bigint;", "all columns")
 	checkFn("alter table t modify column a bigint, modify column b bigint;", "") // no lossy change
 }
-
 func TestCancelAfterReorgTimeout(t *testing.T) {
 	store := realtikvtest.CreateMockStoreAndSetup(t)
 	tk := testkit.NewTestKit(t, store)

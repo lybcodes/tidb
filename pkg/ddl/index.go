@@ -182,7 +182,6 @@ func CheckPKOnGeneratedColumn(tblInfo *model.TableInfo, indexPartSpecifications 
 			}
 			return nil, dbterror.ErrUnsupportedOnGeneratedColumn.GenWithStackByArgs("Defining a virtual generated column as primary key")
 		}
-	}
 
 	return lastCol, nil
 }
@@ -239,7 +238,6 @@ func checkIndexColumn(col *model.ColumnInfo, indexColumnLen int, suppressTooLong
 		if !isVectorIndex {
 			return dbterror.ErrUnsupportedAddVectorIndex.FastGenByArgs("unsupported adding a general index on a vector column")
 		}
-	}
 
 	// Length must be specified and non-zero for BLOB and TEXT column indexes.
 	if types.IsTypeBlob(col.FieldType.GetType()) {
@@ -252,7 +250,6 @@ func checkIndexColumn(col *model.ColumnInfo, indexColumnLen int, suppressTooLong
 		if indexColumnLen == types.ErrorLength {
 			return errors.Trace(dbterror.ErrKeyPart0.GenWithStackByArgs(col.Name.O))
 		}
-	}
 
 	// Length can only be specified for specifiable types.
 	if indexColumnLen != types.UnspecifiedLength && !types.IsTypePrefixable(col.FieldType.GetType()) {
@@ -269,7 +266,6 @@ func checkIndexColumn(col *model.ColumnInfo, indexColumnLen int, suppressTooLong
 		if indexColumnLen == types.ErrorLength {
 			return errors.Trace(dbterror.ErrKeyPart0.GenWithStackByArgs(col.Name.O))
 		}
-	}
 
 	if types.IsString(col.FieldType.GetType()) {
 		desc, err := charset.GetCharsetInfo(col.GetCharset())
@@ -284,7 +280,6 @@ func checkIndexColumn(col *model.ColumnInfo, indexColumnLen int, suppressTooLong
 		if !suppressTooLongKeyErr {
 			return dbterror.ErrTooLongKey.GenWithStackByArgs(indexColumnLen, maxIndexLength)
 		}
-	}
 	return nil
 }
 
@@ -326,7 +321,6 @@ func getIndexColumnLength(col *model.ColumnInfo, colLen int) (int, error) {
 	default:
 		return length, nil
 	}
-}
 
 // decimal using a binary format that packs nine decimal (base 10) digits into four bytes.
 func calcBytesLengthForDecimal(m int) int {
@@ -429,7 +423,6 @@ func buildVectorInfoWithCheck(indexPartSpecifications []*ast.IndexPartSpecificat
 				fmt.Sprintf("vector index %s function %s already exist on column %s",
 					idx.Name, f.FnName, colInfo.Name))
 		}
-	}
 	if colInfo.FieldType.GetFlen() <= 0 {
 		return nil, "", errors.Errorf("add vector index can only be defined on fixed-dimension vector columns")
 	}
@@ -464,7 +457,6 @@ func AddIndexColumnFlag(tblInfo *model.TableInfo, indexInfo *model.IndexInfo) {
 	} else {
 		tblInfo.Columns[col.Offset].AddFlag(mysql.MultipleKeyFlag)
 	}
-}
 
 // DropIndexColumnFlag drops the column flag of columns in TableInfo according to the IndexInfo.
 func DropIndexColumnFlag(tblInfo *model.TableInfo, indexInfo *model.IndexInfo) {
@@ -491,7 +483,6 @@ func DropIndexColumnFlag(tblInfo *model.TableInfo, indexInfo *model.IndexInfo) {
 
 		AddIndexColumnFlag(tblInfo, index)
 	}
-}
 
 // ValidateRenameIndex checks if index name is ok to be renamed.
 func ValidateRenameIndex(from, to pmodel.CIStr, tbl *model.TableInfo) (ignore bool, err error) {
@@ -547,7 +538,6 @@ func validateAlterIndexVisibility(ctx sessionctx.Context, indexName pmodel.CIStr
 		if idx.Invisible == invisible {
 			return true, nil
 		}
-	}
 	if idx.VectorInfo != nil {
 		return false, dbterror.ErrGeneralUnsupportedDDL.GenWithStackByArgs("set vector index invisible")
 	}
@@ -579,8 +569,6 @@ func setIndexVisibility(tblInfo *model.TableInfo, name pmodel.CIStr, invisible b
 		if idx.Name.L == name.L || getChangingIndexOriginName(idx) == name.O {
 			idx.Invisible = invisible
 		}
-	}
-}
 
 func getNullColInfos(tblInfo *model.TableInfo, indexInfo *model.IndexInfo) ([]*model.ColumnInfo, error) {
 	nullCols := make([]*model.ColumnInfo, 0, len(indexInfo.Columns))
@@ -589,7 +577,6 @@ func getNullColInfos(tblInfo *model.TableInfo, indexInfo *model.IndexInfo) ([]*m
 		if !mysql.HasNotNullFlag(col.GetFlag()) || mysql.HasPreventNullInsertFlag(col.GetFlag()) {
 			nullCols = append(nullCols, col)
 		}
-	}
 	return nullCols, nil
 }
 
@@ -638,7 +625,6 @@ func moveAndUpdateHiddenColumnsToPublic(tblInfo *model.TableInfo, idxInfo *model
 		if tblInfo.Columns[col.Offset].Hidden {
 			hiddenColOffset[col.Offset] = struct{}{}
 		}
-	}
 	if len(hiddenColOffset) == 0 {
 		return
 	}
@@ -649,14 +635,11 @@ func moveAndUpdateHiddenColumnsToPublic(tblInfo *model.TableInfo, idxInfo *model
 			firstNonPublicPos = i
 			break
 		}
-	}
 	for _, col := range idxInfo.Columns {
 		tblInfo.Columns[col.Offset].State = model.StatePublic
 		if _, needMove := hiddenColOffset[col.Offset]; needMove {
 			tblInfo.MoveColumnInfo(col.Offset, firstNonPublicPos)
 		}
-	}
-}
 
 func checkAndBuildIndexInfo(
 	job *model.Job, tblInfo *model.TableInfo,
@@ -682,13 +665,11 @@ func checkAndBuildIndexInfo(
 			// TODO: refine the error message
 			return nil, infoschema.ErrColumnExists.GenWithStackByArgs(hiddenCol.Name)
 		}
-	}
 
 	if len(args.HiddenCols) > 0 {
 		for _, hiddenCol := range args.HiddenCols {
 			InitAndAddColumnToTable(tblInfo, hiddenCol)
 		}
-	}
 	if err = checkAddColumnTooManyColumns(len(tblInfo.Columns)); err != nil {
 		return nil, errors.Trace(err)
 	}
@@ -710,7 +691,6 @@ func checkAndBuildIndexInfo(
 		if _, err = CheckPKOnGeneratedColumn(tblInfo, args.IndexPartSpecifications); err != nil {
 			return nil, err
 		}
-	}
 	indexInfo.ID = AllocateIndexID(tblInfo)
 	tblInfo.Indices = append(tblInfo.Indices, indexInfo)
 	if err = checkTooManyIndexes(tblInfo.Indices); err != nil {
@@ -906,7 +886,6 @@ func (w *worker) checkVectorIndexProcess(jobCtx *jobContext, tbl table.Table, jo
 		if isDone {
 			break
 		}
-	}
 	return nil
 }
 
@@ -923,7 +902,6 @@ func (w *worker) checkVectorIndexProcessOnce(jobCtx *jobContext, tbl table.Table
 			} else {
 				failpoint.Return(true, 0, int64(valInt), nil)
 			}
-		}
 	})
 
 	sql := fmt.Sprintf("select rows_stable_not_indexed, rows_stable_indexed, error_message from information_schema.tiflash_indexes where table_id = %d and index_id = %d;",
@@ -943,7 +921,6 @@ func (w *worker) checkVectorIndexProcessOnce(jobCtx *jobContext, tbl table.Table
 			err = dbterror.ErrTiFlashBackfillIndex.FastGenByArgs(errMsg)
 			break
 		}
-	}
 	if err != nil {
 		return false, 0, 0, errors.Trace(err)
 	}
@@ -1018,7 +995,6 @@ SwitchIndexState:
 			if err != nil {
 				break SwitchIndexState
 			}
-		}
 
 		ver, err = updateVersionAndTableInfo(jobCtx, job, tblInfo, originalState != model.StateWriteOnly)
 		if err != nil {
@@ -1033,7 +1009,6 @@ SwitchIndexState:
 			if err != nil {
 				break SwitchIndexState
 			}
-		}
 
 		ver, err = updateVersionAndTableInfo(jobCtx, job, tblInfo, originalState != model.StateWriteReorganization)
 		if err != nil {
@@ -1087,7 +1062,6 @@ SwitchIndexState:
 					if err = UpdateColsNull2NotNull(tblInfo, indexInfo); err != nil {
 						return ver, errors.Trace(err)
 					}
-				}
 				indexInfo.State = model.StatePublic
 			}
 
@@ -1104,7 +1078,6 @@ SwitchIndexState:
 						}
 						break
 					}
-				}
 			})
 
 			ver, err = updateVersionAndTableInfo(jobCtx, job, tblInfo, originalState != model.StatePublic)
@@ -1163,7 +1136,6 @@ func initForReorgIndexes(w *worker, job *model.Job, idxInfos []*model.IndexInfo)
 		for _, indexInfo := range idxInfos {
 			indexInfo.BackfillState = model.BackfillStateRunning
 		}
-	}
 	return nil
 }
 
@@ -1225,7 +1197,6 @@ func (w *worker) queryAnalyzeStatusSince(startTS uint64, dbName, tblName string)
 		default:
 			// unknown state: continue checking other rows
 		}
-	}
 	// If no recognizable state found, treat as unknown so caller may attempt to start ANALYZE.
 	return analyzeUnknown, nil
 }
@@ -1274,7 +1245,6 @@ func (w *worker) analyzeStatusDecision(job *model.Job, dbName, tblName string, s
 		// analyzeUnknown: caller should proceed to start ANALYZE locally.
 		return false, false, false, true
 	}
-}
 
 func (w *worker) analyzeTableAfterCreateIndex(job *model.Job, dbName, tblName string) (done bool, timedOut bool, failed bool) {
 	doneCh := w.ddlCtx.getAnalyzeDoneCh(job.ID)
@@ -1293,7 +1263,6 @@ func (w *worker) analyzeTableAfterCreateIndex(job *model.Job, dbName, tblName st
 			if elapsed*2 > cumulativeTimeout {
 				cumulativeTimeout = elapsed * 2
 			}
-		}
 		w.ddlCtx.setAnalyzeCumulativeTimeout(job.ID, cumulativeTimeout)
 	}
 
@@ -1390,7 +1359,6 @@ func (w *worker) analyzeTableAfterCreateIndex(job *model.Job, dbName, tblName st
 		}
 		return false, false, false
 	}
-}
 
 func checkIfTableReorgWorkCanSkip(
 	store kv.Storage,
@@ -1428,7 +1396,6 @@ func checkIfTableIsEmpty(
 			if !checkIfPhysicalTableIsEmpty(ctx, store, pTbl, startTS) {
 				return false
 			}
-		}
 		return true
 	}
 	//nolint:forcetypeassert
@@ -1485,7 +1452,6 @@ func checkIfTempIndexReorgWorkCanSkip(
 		if idxInfo.Global {
 			globalIdxIDs = append(globalIdxIDs, idxInfo.ID)
 		}
-	}
 	return checkIfTempIndexIsEmpty(ctx, store, tbl, firstIdxID, lastIdxID, globalIdxIDs, startTS)
 }
 
@@ -1503,12 +1469,10 @@ func checkIfTempIndexIsEmpty(
 			if !checkIfTempIndexIsEmptyForPhysicalTable(ctx, store, pid, firstIdxID, lastIdxID, startTS) {
 				return false
 			}
-		}
 		for _, globalIdxID := range globalIdxIDs {
 			if !checkIfTempIndexIsEmptyForPhysicalTable(ctx, store, tblMetaID, globalIdxID, globalIdxID, startTS) {
 				return false
 			}
-		}
 		return true
 	}
 	return checkIfTempIndexIsEmptyForPhysicalTable(ctx, store, tblMetaID, firstIdxID, lastIdxID, startTS)
@@ -1562,7 +1526,6 @@ func pickBackfillType(job *model.Job) (model.ReorgType, error) {
 			job.ReorgMeta.ReorgTp = model.ReorgTypeIngest
 			return model.ReorgTypeIngest, nil
 		}
-	}
 	// The lightning environment is unavailable, but we can still use the txn-merge backfill.
 	logutil.DDLLogger().Info("fallback to txn-merge backfill process",
 		zap.Bool("lightning env initialized", ingest.LitInitialized))
@@ -1672,7 +1635,6 @@ func doReorgWorkForCreateIndex(
 	default:
 		return false, 0, dbterror.ErrInvalidDDLState.GenWithStackByArgs("backfill", allIndexInfos[0].BackfillState)
 	}
-}
 
 func runIngestReorgJobDist(w *worker, jobCtx *jobContext, job *model.Job,
 	tbl table.Table, allIndexInfos []*model.IndexInfo) (done bool, ver int64, err error) {
@@ -1721,7 +1683,6 @@ func isRetryableError(err error) bool {
 		if strings.Contains(errMsg, m) {
 			return true
 		}
-	}
 	originErr := errors.Cause(err)
 	if tErr, ok := originErr.(*terror.Error); ok {
 		sqlErr := terror.ToSQLError(tErr)
@@ -1797,7 +1758,6 @@ func runReorgJobAndHandleErr(
 			if err1 := rh.RemoveDDLReorgHandle(job, reorgInfo.elements); err1 != nil {
 				logutil.DDLLogger().Warn("run add index job failed, convert job to rollback, RemoveDDLReorgHandle failed", zap.Stringer("job", job), zap.Error(err1))
 			}
-		}
 		return false, ver, errors.Trace(err)
 	}
 	failpoint.Inject("mockDMLExecutionStateBeforeImport", func(_ failpoint.Value) {
@@ -1890,7 +1850,6 @@ func onDropIndex(jobCtx *jobContext, job *model.Job) (ver int64, _ error) {
 			if err := infosync.SyncTiFlashTableSchema(jobCtx.stepCtx, tblInfo.ID); err != nil {
 				logutil.DDLLogger().Warn("run drop tiflash index but syncing schema failed", zap.Error(err))
 			}
-		}
 
 		// Finish this job.
 		if job.IsRollingback() {
@@ -1947,7 +1906,6 @@ func RemoveDependentHiddenColumns(tblInfo *model.TableInfo, idxInfo *model.Index
 		if col.Hidden {
 			hiddenColOffs = append(hiddenColOffs, col.Offset)
 		}
-	}
 	// Sort the offset in descending order.
 	slices.SortFunc(hiddenColOffs, func(a, b int) int { return cmp.Compare(b, a) })
 	// Move all the dependent hidden columns to the end.
@@ -1966,7 +1924,6 @@ func removeIndexInfo(tblInfo *model.TableInfo, idxInfo *model.IndexInfo) {
 			offset = i
 			break
 		}
-	}
 	if offset == -1 {
 		// The target index has been removed.
 		return
@@ -2020,11 +1977,9 @@ func checkInvisibleIndexesOnPK(tblInfo *model.TableInfo, indexInfos []*model.Ind
 				needAppend = false
 				break
 			}
-		}
 		if needAppend {
 			newIndices = append(newIndices, oidx)
 		}
-	}
 	newTbl := tblInfo.Clone()
 	newTbl.Indices = newIndices
 	if err := checkInvisibleIndexOnPK(newTbl); err != nil {
@@ -2195,8 +2150,6 @@ func (w *baseIndexWorker) getIndexRecord(idxInfo *model.IndexInfo, handle kv.Han
 				if idxInfo.Name.O == "idx2" && handle.IntValue() == 6144 && atomic.CompareAndSwapUint32(&mockNotOwnerErrOnce, 1, 2) {
 					failpoint.Return(nil, errors.Trace(dbterror.ErrNotOwner))
 				}
-			}
-		}
 	})
 	idxVal := make([]types.Datum, len(idxInfo.Columns))
 	var err error
@@ -2224,7 +2177,6 @@ func (w *baseIndexWorker) cleanRowMap() {
 	for id := range w.rowMap {
 		delete(w.rowMap, id)
 	}
-}
 
 // getNextKey gets next key of entry that we are going to process.
 func (w *baseIndexWorker) getNextKey(taskRange reorgBackfillTask, taskDone bool) (nextKey kv.Key) {
@@ -2369,7 +2321,6 @@ func (w *addIndexTxnWorker) batchCheckUniqueKey(txn kv.Transaction, idxRecords [
 			w.recordIdx = append(w.recordIdx, i)
 			uniqueBatchKeys = append(uniqueBatchKeys, key)
 		}
-	}
 
 	if len(uniqueBatchKeys) == 0 {
 		return nil
@@ -2394,7 +2345,6 @@ func (w *addIndexTxnWorker) batchCheckUniqueKey(txn kv.Transaction, idxRecords [
 				if err := w.checkHandleExists(idx.Meta(), key, val, idxRecords[w.recordIdx[i]].handle); err != nil {
 					return errors.Trace(err)
 				}
-			}
 		} else if w.distinctCheckFlags[i] {
 			// The keys in w.batchCheckKeys also maybe duplicate,
 			// so we need to backfill the not found key into `batchVals` map.
@@ -2473,7 +2423,6 @@ func writeChunk(
 			for i, datum := range handleDataBuf {
 				restoreDataBuf[i] = *datum.Clone()
 			}
-		}
 		h, err := BuildHandle(handleDataBuf, c.TableInfo, c.PrimaryKeyInfo, loc, errCtx)
 		if err != nil {
 			return 0, nil, errors.Trace(err)
@@ -2492,7 +2441,6 @@ func writeChunk(
 				err = ingest.TryConvertToKeyExistsErr(err, index.Meta(), tblInfo)
 				return 0, nil, errors.Trace(err)
 			}
-		}
 		count++
 		lastHandle = h
 	}
@@ -2506,7 +2454,6 @@ func maxIndexColumnCount(indexes []table.Index) int {
 		if colCnt > maxCnt {
 			maxCnt = colCnt
 		}
-	}
 	return maxCnt
 }
 
@@ -2681,7 +2628,6 @@ func (w *worker) addTableIndex(
 			}
 			return checkDuplicateForUniqueIndex(ctx, t, reorgInfo, discovery)
 		}
-	}
 
 	var err error
 	if tbl, ok := t.(table.PartitionedTable); ok {
@@ -2698,7 +2644,6 @@ func (w *worker) addTableIndex(
 				if p == nil {
 					return dbterror.ErrCancelledDDLJob.GenWithStack("Can not find partition id %d for table %d", reorgInfo.PhysicalTableID, t.Meta().ID)
 				}
-			}
 			err = w.addPhysicalTableIndex(ctx, p, reorgInfo)
 			if err != nil {
 				break
@@ -2713,7 +2658,6 @@ func (w *worker) addTableIndex(
 			if rc := w.getReorgCtx(reorgInfo.Job.ID); rc != nil {
 				reorgInfo.Job.SetRowCount(rc.getRowCount())
 			}
-		}
 	} else {
 		//nolint:forcetypeassert
 		phyTbl := t.(table.PhysicalTable)
@@ -2744,13 +2688,10 @@ func checkDuplicateForUniqueIndex(ctx context.Context, t table.Table, reorgInfo 
 				if err != nil {
 					return err
 				}
-			}
 			err = bc.CollectRemoteDuplicateRows(indexInfo.ID, t)
 			if err != nil {
 				return err
 			}
-		}
-	}
 	return nil
 }
 
@@ -2811,7 +2752,6 @@ func (w *worker) executeDistTask(stepCtx context.Context, t table.Table, reorgIn
 					logutil.DDLLogger().Warn("job paused by user", zap.Error(err))
 					return dbterror.ErrPausedDDLJob.GenWithStackByArgs(reorgInfo.Job.ID)
 				}
-			}
 			return err
 		})
 	} else {
@@ -2848,7 +2788,6 @@ func (w *worker) executeDistTask(stepCtx context.Context, t table.Table, reorgIn
 					logutil.DDLLogger().Warn("job paused by user", zap.Error(err))
 					return dbterror.ErrPausedDDLJob.GenWithStackByArgs(reorgInfo.Job.ID)
 				}
-			}
 			return err
 		})
 	}
@@ -2862,24 +2801,35 @@ func (w *worker) executeDistTask(stepCtx context.Context, t table.Table, reorgIn
 			select {
 			case <-done:
 				w.updateDistTaskRowCount(taskKey, reorgInfo.Job.ID)
-				err := w.checkRunnableOrHandlePauseOrCanceled(stepCtx, taskKey)
-				return errors.Trace(err)
-			case <-checkFinishTk.C:
-				err := w.checkRunnableOrHandlePauseOrCanceled(stepCtx, taskKey)
+err := w.checkRunnableOrHandlePauseOrCanceled(stepCtx, taskKey)
 				if err != nil {
 					return errors.Trace(err)
 				}
+			case <-checkFinishTk.C:
+				if err = w.isReorgRunnable(stepCtx, true); err != nil {
+					if dbterror.ErrPausedDDLJob.Equal(err) {
+						if err = handle.PauseTask(w.workCtx, taskKey); err != nil {
+							logutil.DDLLogger().Error("pause task error", zap.String("task_key", taskKey), zap.Error(err))
+							continue
+						}
+						failpoint.InjectCall("syncDDLTaskPause")
+					}
+					if !dbterror.ErrCancelledDDLJob.Equal(err) {
+						return errors.Trace(err)
+					}
+					if err = handle.CancelTask(w.workCtx, taskKey); err != nil {
+						logutil.DDLLogger().Error("cancel task error", zap.String("task_key", taskKey), zap.Error(err))
+						// continue to cancel task.
+						continue
+					}
 			case <-updateRowCntTk.C:
 				w.updateDistTaskRowCount(taskKey, reorgInfo.Job.ID)
 			}
-		}
 	})
 	err = g.Wait()
 	return err
 }
 
-<<<<<<< HEAD
-=======
 func (w *worker) checkRunnableOrHandlePauseOrCanceled(stepCtx context.Context, taskKey string) (err error) {
 	if err = w.isReorgRunnable(stepCtx, true); err != nil {
 		if dbterror.ErrPausedDDLJob.Equal(err) {
@@ -2896,18 +2846,9 @@ func (w *worker) checkRunnableOrHandlePauseOrCanceled(stepCtx context.Context, t
 			logutil.DDLLogger().Warn("cancel task error", zap.String("task_key", taskKey), zap.Error(err))
 			return nil
 		}
-	}
 	return nil
 }
 
-// Note: we can achieve the same effect by calling ModifyTaskByID directly inside
-// the process of 'ADMIN ALTER DDL JOB xxx', so we can eliminate the goroutine,
-// but if the task hasn't been created we need to make sure the task is created
-// with config after ALTER DDL JOB is executed. A possible solution is to make
-// the DXF task submission and 'ADMIN ALTER DDL JOB xxx' txn conflict with each
-// other when they overlap in time, by modify the job at the same time when submit
-// task, as we are using optimistic txn. But this will cause WRITE CONFLICT with
-// outer txn in transitOneJobStep.
 func modifyTaskParamLoop(
 	ctx context.Context,
 	sysTblMgr systable.Manager,
@@ -2976,7 +2917,6 @@ func modifyTaskParamLoop(
 			continue
 		}
 		if !currTask.State.CanMoveToModifying() {
-			// user might modify param again while another modify is ongoing.
 			logger.Info("task state is not suitable for modifying, will retry later",
 				zap.String("state", currTask.State.String()))
 			continue
@@ -2998,7 +2938,6 @@ func modifyTaskParamLoop(
 		lastBatchSize = batchSize
 		lastMaxWriteSpeed = maxWriteSpeed
 	}
-}
 
 func adjustConcurrency(ctx context.Context, taskMgr storage.Manager, workerCnt int) (int, error) {
 	cpuCount, err := taskMgr.GetCPUCountOfNode(ctx)
@@ -3007,8 +2946,8 @@ func adjustConcurrency(ctx context.Context, taskMgr storage.Manager, workerCnt i
 	}
 	return min(workerCnt, cpuCount), nil
 }
-
->>>>>>> 968e31fc3fe (ddl: cancel the job context before rolling back (#64130))
+=======
+>>>>>>> origin/release-8.5
 // EstimateTableRowSizeForTest is used for test.
 var EstimateTableRowSizeForTest = estimateTableRowSize
 
@@ -3159,7 +3098,6 @@ func getNextPartitionInfo(reorg *reorgInfo, t table.PartitionedTable, currPhysic
 						allGlobal = false
 						break
 					}
-				}
 				if allGlobal {
 					pid = 0
 				} else {
@@ -3178,7 +3116,6 @@ func getNextPartitionInfo(reorg *reorgInfo, t table.PartitionedTable, currPhysic
 				// non-touched partition, i.e. recreating Global Index for the non-touched partitions
 				pid, err = findNextNonTouchedPartitionID(currPhysicalTableID, pi)
 			}
-		}
 	} else {
 		// case 2
 		pid, err = findNextPartitionID(currPhysicalTableID, pi.DroppingDefinitions)
@@ -3220,7 +3157,6 @@ func getNextPartitionInfo(reorg *reorgInfo, t table.PartitionedTable, currPhysic
 		if err != nil {
 			return 0, nil, nil, errors.Trace(err)
 		}
-	}
 	return pid, startKey, endKey, nil
 }
 
@@ -3259,7 +3195,6 @@ func findNextPartitionID(currentPartition int64, defs []model.PartitionDefinitio
 			}
 			return defs[i+1].ID, nil
 		}
-	}
 	return 0, errors.Errorf("partition id not found %d", currentPartition)
 }
 
@@ -3277,7 +3212,6 @@ func findNextNonTouchedPartitionID(currPartitionID int64, pi *model.PartitionInf
 		if pid == 0 {
 			break
 		}
-	}
 	return pid, err
 }
 
@@ -3292,7 +3226,6 @@ func getIndexInfoByNameAndColumn(oldTableInfo *model.TableInfo, newOne *model.In
 		if newOne.Name.L == oldOne.Name.L && indexColumnSliceEqual(newOne.Columns, oldOne.Columns) {
 			return oldOne
 		}
-	}
 	return nil
 }
 
@@ -3310,7 +3243,6 @@ func indexColumnSliceEqual(a, b []*model.IndexColumn) bool {
 		if v.Name.L != b[i].Name.L {
 			return false
 		}
-	}
 	return true
 }
 
@@ -3333,7 +3265,6 @@ func newCleanUpIndexWorker(id int, t table.PhysicalTable, decodeColMap map[int64
 		if index.Meta().Global {
 			indexes = append(indexes, index)
 		}
-	}
 	return &cleanUpIndexWorker{
 		baseIndexWorker: baseIndexWorker{
 			backfillCtx: bCtx,
@@ -3409,13 +3340,11 @@ func (w *cleanUpIndexWorker) BackfillData(_ context.Context, handleRange reorgBa
 					if partHandle.PartitionID != handleRange.physicalTable.GetPhysicalID() {
 						continue
 					}
-				}
 				// Lock the global index entry, to prevent deleting something that is concurrently added.
 				err = txn.LockKeys(ctx, lockCtx, allKeys[i])
 				if err != nil {
 					return errors.Trace(err)
 				}
-			}
 			// we fetch records row by row, so records will belong to
 			// index[0], index[1] ... index[n-1], index[0], index[1] ...
 			// respectively. So indexes[i%n] is the index of idxRecords[i].
@@ -3461,7 +3390,6 @@ func (w *worker) cleanupGlobalIndexes(tbl table.PartitionedTable, partitionIDs [
 		if err != nil {
 			return errors.Trace(err)
 		}
-	}
 
 	return errors.Trace(err)
 }
@@ -3484,7 +3412,6 @@ func (w *worker) updateReorgInfoForPartitions(t table.PartitionedTable, reorg *r
 			pid = partitionIDs[i+1]
 			break
 		}
-	}
 
 	currentVer, err := getValidCurrentVersion(reorg.jobCtx.store)
 	if err != nil {
@@ -3530,8 +3457,6 @@ func FindRelatedIndexesToChange(tblInfo *model.TableInfo, colName pmodel.CIStr) 
 			} else {
 				normalIdxInfos = append(normalIdxInfos, r)
 			}
-		}
-	}
 	// Overwrite if the index has the corresponding temp index. For example,
 	// we try to find the indexes that contain the column `b` and there are two indexes, `i(a, b)` and `$i($a, b)`.
 	// Note that the symbol `$` means temporary. The index `$i($a, b)` is temporarily created by the previous "modify a" statement.
@@ -3543,8 +3468,6 @@ func FindRelatedIndexesToChange(tblInfo *model.TableInfo, colName pmodel.CIStr) 
 			if normIdx.IndexInfo.Name.O == origName {
 				result[i] = tmpIdx
 			}
-		}
-	}
 	return result
 }
 
@@ -3555,7 +3478,6 @@ func isColumnarIndexColumn(tblInfo *model.TableInfo, col *model.ColumnInfo) bool
 		if idx.IndexInfo.VectorInfo != nil {
 			return true
 		}
-	}
 	return false
 }
 
@@ -3568,7 +3490,6 @@ func isTempIndex(idxInfo *model.IndexInfo, tblInfo *model.TableInfo) bool {
 		if idxCol.UseChangingType || tblInfo.Columns[idxCol.Offset].ChangeStateInfo != nil {
 			return true
 		}
-	}
 	return false
 }
 
@@ -3577,7 +3498,6 @@ func findIdxCol(idxInfo *model.IndexInfo, colName pmodel.CIStr) int {
 		if idxCol.Name.L == colName.L {
 			return offset
 		}
-	}
 	return -1
 }
 
@@ -3597,9 +3517,6 @@ func renameIndexes(tblInfo *model.TableInfo, from, to pmodel.CIStr) {
 				col.Name.L = strings.Replace(col.Name.L, from.L, to.L, 1)
 				col.Name.O = strings.Replace(col.Name.O, from.O, to.O, 1)
 			}
-		}
-	}
-}
 
 func renameHiddenColumns(tblInfo *model.TableInfo, from, to pmodel.CIStr) {
 	for _, col := range tblInfo.Columns {
@@ -3607,5 +3524,3 @@ func renameHiddenColumns(tblInfo *model.TableInfo, from, to pmodel.CIStr) {
 			col.Name.L = strings.Replace(col.Name.L, from.L, to.L, 1)
 			col.Name.O = strings.Replace(col.Name.O, from.O, to.O, 1)
 		}
-	}
-}

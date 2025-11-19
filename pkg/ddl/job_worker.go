@@ -125,7 +125,6 @@ func (c *jobContext) initStepCtx() {
 		c.stepCtx = stepCtx
 		c.stepCtxCancel = cancel
 	}
-}
 
 func (c *jobContext) cleanStepCtx(cause error) {
 	// reorgTimeoutOccurred indicates whether the current reorg process
@@ -152,7 +151,6 @@ func (c *jobContext) getAutoIDRequirement() autoid.Requirement {
 		store:     c.store,
 		autoidCli: c.autoidCli,
 	}
-}
 
 func (c *jobContext) notifyDone() {
 	if c.notifyCh != nil {
@@ -160,7 +158,6 @@ func (c *jobContext) notifyDone() {
 		// create table is enabled.
 		close(c.notifyCh)
 	}
-}
 
 type workerType byte
 
@@ -219,7 +216,6 @@ func NewReorgContext() *ReorgContext {
 		cacheDigest:        nil,
 		tp:                 "",
 	}
-}
 
 func newWorker(ctx context.Context, tp workerType, sessPool *sess.Pool, delRangeMgr delRangeManager, dCtx *ddlCtx) *worker {
 	worker := &worker{
@@ -267,7 +263,6 @@ func asyncNotify(ch chan struct{}) {
 	case ch <- struct{}{}:
 	default:
 	}
-}
 
 func injectFailPointForGetJob(job *model.Job) {
 	if job == nil {
@@ -387,10 +382,8 @@ func JobNeedGC(job *model.Job) bool {
 				if needGC {
 					return true
 				}
-			}
 			return false
 		}
-	}
 	return false
 }
 
@@ -407,7 +400,6 @@ func (w *worker) finishDDLJob(jobCtx *jobContext, job *model.Job) (err error) {
 		if err != nil {
 			return errors.Trace(err)
 		}
-	}
 
 	switch job.Type {
 	case model.ActionRecoverTable:
@@ -422,7 +414,6 @@ func (w *worker) finishDDLJob(jobCtx *jobContext, job *model.Job) (err error) {
 			// delete its arguments
 			job.ClearDecodedArgs()
 		}
-	}
 	if err != nil {
 		return errors.Trace(err)
 	}
@@ -463,7 +454,6 @@ func finishRecoverTable(w *worker, job *model.Job) error {
 		if err != nil {
 			return errors.Trace(err)
 		}
-	}
 	return nil
 }
 
@@ -477,7 +467,6 @@ func finishRecoverSchema(w *worker, job *model.Job) error {
 		if err != nil {
 			return errors.Trace(err)
 		}
-	}
 	return nil
 }
 
@@ -493,7 +482,6 @@ func (w *ReorgContext) setDDLLabelForTopSQL(jobQuery string) {
 	} else {
 		topsql.AttachAndRegisterSQLInfo(w.ddlJobCtx, w.cacheNormalizedSQL, w.cacheDigest, false)
 	}
-}
 
 // DDLBackfillers contains the DDL need backfill step.
 var DDLBackfillers = map[model.ActionType]string{
@@ -618,7 +606,6 @@ func (w *worker) transitOneJobStep(
 					}
 					break
 				}
-			}
 		})
 		return 0, w.handleJobDone(jobCtx, job)
 	}
@@ -686,7 +673,6 @@ func (w *worker) transitOneJobStep(
 		case <-time.After(GetWaitTimeWhenErrorOccurred()):
 		case <-w.workCtx.Done():
 		}
-	}
 
 	return schemaVer, nil
 }
@@ -764,7 +750,6 @@ func (w *worker) countForPanic(jobCtx *jobContext, job *model.Job) {
 		job.Error = toTError(errors.New(msg))
 		job.State = model.JobStateCancelled
 	}
-}
 
 // countForError records the error count for DDL job.
 func (w *worker) countForError(jobCtx *jobContext, job *model.Job, err error) error {
@@ -867,7 +852,7 @@ func (w *worker) runOneJobStep(
 
 	// It would be better to do the positive check, but no idea to list all valid states here now.
 	if job.IsRollingback() {
-		if jobCtx.stepCtx != nil && jobCtx.stepCtx.Err() == nil {
+if jobCtx.stepCtx != nil && jobCtx.stepCtx.Err() == nil {
 			// If the job switched to rolling back immediately after a reorg step
 			// timed out, the step context may still be active and hold reorg
 			// resources (workers, tickers, goroutines). Clean the step context
@@ -886,7 +871,7 @@ func (w *worker) runOneJobStep(
 			defer close(stopCheckingJobCancelled)
 
 			jobCtx.initStepCtx()
-			defer jobCtx.cleanStepCtx(context.Canceled)
+defer jobCtx.cleanStepCtx(context.Canceled)
 			w.wg.Run(func() {
 				ticker := time.NewTicker(2 * time.Second)
 				defer ticker.Stop()
@@ -926,11 +911,8 @@ func (w *worker) runOneJobStep(
 						case model.JobStateDone, model.JobStateSynced:
 							return
 						}
-					}
-				}
 			})
 		}
-	}
 	// When upgrading from a version where the ReorgMeta fields did not exist in the DDL job information,
 	// the unmarshalled job will have a nil value for the ReorgMeta field.
 	if w.tp == addIdxWorker && job.ReorgMeta == nil {
@@ -1151,7 +1133,6 @@ func updateGlobalVersionAndWaitSynced(
 			// There is no need to use etcd to sync. The function returns directly.
 			return nil
 		}
-	}
 
 	return waitVersionSynced(ctx, jobCtx, job, latestSchemaVersion)
 }
@@ -1167,6 +1148,5 @@ func buildPlacementAffects(oldIDs []int64, newIDs []int64) []*model.AffectedOpti
 			OldTableID: oldIDs[i],
 			TableID:    newIDs[i],
 		}
-	}
 	return affects
 }
