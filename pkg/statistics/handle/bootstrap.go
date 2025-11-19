@@ -187,7 +187,7 @@ func (h *Handle) initStatsHistograms4Chunk(is infoschema.InfoSchema, cache stats
 		if table == nil || table.PhysicalID != tblID {
 			tblInfoValid = false
 			if table != nil {
-				table.ColAndIdxExistenceMap.SetChecked()
+table.ColAndIdxExistenceMap.SetChecked()
 				cache.Put(table.PhysicalID, table) // put this table in the cache because all statstics of the table have been read.
 			}
 			var ok bool
@@ -297,7 +297,11 @@ func (h *Handle) initStatsHistograms4Chunk(is infoschema.InfoSchema, cache stats
 		}
 	}
 	if table != nil {
-		table.ColAndIdxExistenceMap.SetChecked()
+```python
+table.ColAndIdxExistenceMap.SetChecked()
+```
+
+Both conflicts are resolved by including the method call `SetChecked()` from the `origin/release-8.5` branch.
 		cache.Put(table.PhysicalID, table) // put this table in the cache because all statstics of the table have been read.
 	}
 }
