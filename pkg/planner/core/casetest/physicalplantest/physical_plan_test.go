@@ -37,11 +37,9 @@ import (
 	"github.com/pingcap/tidb/pkg/testkit/testdata"
 	contextutil "github.com/pingcap/tidb/pkg/util/context"
 	"github.com/pingcap/tidb/pkg/util/hint"
-<<<<<<< HEAD
-=======
-	"github.com/pingcap/tidb/pkg/util/mock"
+"github.com/pingcap/tidb/pkg/util/mock"
 	"github.com/pingcap/tidb/pkg/util/size"
->>>>>>> d7169b2a324 (planner: PointGet will not skip the reuse chunk with enough total memory (#63921))
+>>>>>>> origin/release-8.5
 	"github.com/stretchr/testify/require"
 )
 
@@ -88,7 +86,6 @@ func TestRefine(t *testing.T) {
 		})
 		require.Equal(t, output[i].Best, core.ToString(p), comment)
 	}
-}
 
 func TestAggEliminator(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -122,7 +119,6 @@ func TestAggEliminator(t *testing.T) {
 		})
 		require.Equal(t, output[i].Best, core.ToString(p), fmt.Sprintf("input: %s", tt))
 	}
-}
 
 // Fix Issue #45822
 func TestRuleColumnPruningLogicalApply(t *testing.T) {
@@ -152,7 +148,6 @@ func TestRuleColumnPruningLogicalApply(t *testing.T) {
 		})
 		require.Equal(t, output[i].Best, core.ToString(p), fmt.Sprintf("input: %s", tt))
 	}
-}
 
 func TestSemiJoinToInner(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -182,7 +177,6 @@ func TestSemiJoinToInner(t *testing.T) {
 		})
 		require.Equal(t, output[i].Best, core.ToString(p))
 	}
-}
 
 func TestUnmatchedTableInHint(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -218,8 +212,6 @@ func TestUnmatchedTableInHint(t *testing.T) {
 			require.Equal(t, contextutil.WarnLevelWarning, warnings[0].Level)
 			require.Equal(t, output[i].Warning, warnings[0].Err.Error())
 		}
-	}
-}
 
 func TestIssue37520(t *testing.T) {
 	store := testkit.CreateMockStore(t, mockstore.WithMockTiFlash(2))
@@ -249,7 +241,6 @@ func TestIssue37520(t *testing.T) {
 		tk.MustQuery("explain format = 'brief' " + ts).Check(testkit.Rows(output[i].Plan...))
 		require.Equal(t, output[i].Warn, testdata.ConvertSQLWarnToStrings(tk.Session().GetSessionVars().StmtCtx.GetWarnings()))
 	}
-}
 
 func TestMPPHints(t *testing.T) {
 	store := testkit.CreateMockStore(t, mockstore.WithMockTiFlash(2))
@@ -291,7 +282,6 @@ func TestMPPHints(t *testing.T) {
 		tk.MustQuery("explain format = 'brief' " + tt).Check(testkit.Rows(output[i].Plan...))
 		require.Equal(t, output[i].Warn, testdata.ConvertSQLWarnToStrings(tk.Session().GetSessionVars().StmtCtx.GetWarnings()))
 	}
-}
 
 func TestMPPHintsScope(t *testing.T) {
 	store := testkit.CreateMockStore(t, mockstore.WithMockTiFlash(2))
@@ -337,7 +327,6 @@ func TestMPPHintsScope(t *testing.T) {
 		res.Check(testkit.Rows(output[i].Plan...))
 		require.Equal(t, output[i].Warn, testdata.ConvertSQLWarnToStrings(tk.Session().GetSessionVars().StmtCtx.GetWarnings()))
 	}
-}
 
 func TestMPPBCJModel(t *testing.T) {
 	/*
@@ -390,7 +379,6 @@ func TestMPPBCJModel(t *testing.T) {
 		res.Check(testkit.Rows(output[i].Plan...))
 		require.Equal(t, output[i].Warn, testdata.ConvertSQLWarnToStrings(tk.Session().GetSessionVars().StmtCtx.GetWarnings()))
 	}
-}
 
 func TestMPPPreferBCJ(t *testing.T) {
 	store := testkit.CreateMockStore(t, mockstore.WithMockTiFlash(3))
@@ -445,8 +433,6 @@ func TestMPPPreferBCJ(t *testing.T) {
 			res.Check(testkit.Rows(output[i].Plan...))
 			require.Equal(t, output[i].Warn, testdata.ConvertSQLWarnToStrings(tk.Session().GetSessionVars().StmtCtx.GetWarnings()))
 		}
-	}
-}
 
 func TestMPPBCJModelOneTiFlash(t *testing.T) {
 	/*
@@ -508,7 +494,6 @@ func TestMPPBCJModelOneTiFlash(t *testing.T) {
 		res.Check(testkit.Rows(output[i].Plan...))
 		require.Equal(t, output[i].Warn, testdata.ConvertSQLWarnToStrings(tk.Session().GetSessionVars().StmtCtx.GetWarnings()))
 	}
-}
 
 func TestMPPRightSemiJoin(t *testing.T) {
 	store := testkit.CreateMockStore(t, mockstore.WithMockTiFlash(3))
@@ -563,8 +548,6 @@ func TestMPPRightSemiJoin(t *testing.T) {
 			res.Check(testkit.Rows(output[i].Plan...))
 			require.Equal(t, output[i].Warn, testdata.ConvertSQLWarnToStrings(tk.Session().GetSessionVars().StmtCtx.GetWarnings()))
 		}
-	}
-}
 
 func TestMPPRightOuterJoin(t *testing.T) {
 	store := testkit.CreateMockStore(t, mockstore.WithMockTiFlash(3))
@@ -619,8 +602,6 @@ func TestMPPRightOuterJoin(t *testing.T) {
 			res.Check(testkit.Rows(output[i].Plan...))
 			require.Equal(t, output[i].Warn, testdata.ConvertSQLWarnToStrings(tk.Session().GetSessionVars().StmtCtx.GetWarnings()))
 		}
-	}
-}
 
 func TestHintScope(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -655,7 +636,6 @@ func TestHintScope(t *testing.T) {
 		warnings := tk.Session().GetSessionVars().StmtCtx.GetWarnings()
 		require.Len(t, warnings, 0, comment)
 	}
-}
 
 func TestJoinHints(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -713,7 +693,6 @@ func TestJoinHints(t *testing.T) {
 
 		require.Equal(t, output[i].Hints, hint.RestoreOptimizerHints(hints), comment)
 	}
-}
 
 func TestAggregationHints(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -766,8 +745,6 @@ func TestAggregationHints(t *testing.T) {
 			require.Equal(t, contextutil.WarnLevelWarning, warnings[0].Level)
 			require.Equal(t, output[i].Warning, warnings[0].Err.Error())
 		}
-	}
-}
 
 func TestSemiJoinRewriteHints(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -818,8 +795,6 @@ func TestSemiJoinRewriteHints(t *testing.T) {
 			require.Equal(t, contextutil.WarnLevelWarning, warnings[0].Level)
 			require.Equal(t, output[i].Warning, warnings[0].Err.Error())
 		}
-	}
-}
 
 func TestAggToCopHint(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -876,8 +851,6 @@ func TestAggToCopHint(t *testing.T) {
 			require.Equal(t, contextutil.WarnLevelWarning, warnings[0].Level)
 			require.Equal(t, output[i].Warning, warnings[0].Err.Error())
 		}
-	}
-}
 
 func TestGroupConcatOrderby(t *testing.T) {
 	failpoint.Enable("github.com/pingcap/tidb/pkg/planner/core/forceDynamicPrune", `return(true)`)
@@ -920,7 +893,6 @@ func TestGroupConcatOrderby(t *testing.T) {
 		tk.MustQuery("explain format = 'brief' " + ts).Check(testkit.Rows(output[i].Plan...))
 		tk.MustQuery(ts).Check(testkit.Rows(output[i].Result...))
 	}
-}
 
 func TestIndexHint(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -973,7 +945,6 @@ func TestIndexHint(t *testing.T) {
 
 		require.Equal(t, output[i].Hints, hint.RestoreOptimizerHints(hints), comment)
 	}
-}
 
 func TestIndexMergeHint(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -1028,7 +999,6 @@ func TestIndexMergeHint(t *testing.T) {
 
 		require.Equal(t, output[i].Hints, hint.RestoreOptimizerHints(hints), comment)
 	}
-}
 
 func TestQueryBlockHint(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -1072,7 +1042,6 @@ func TestQueryBlockHint(t *testing.T) {
 
 		require.Equal(t, output[i].Hints, hint.RestoreOptimizerHints(hints), comment)
 	}
-}
 
 func TestInlineProjection(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -1119,7 +1088,6 @@ func TestInlineProjection(t *testing.T) {
 
 		require.Equal(t, output[i].Hints, hint.RestoreOptimizerHints(hints), comment)
 	}
-}
 
 func TestIndexJoinHint(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -1152,7 +1120,6 @@ func TestIndexJoinHint(t *testing.T) {
 			if !strings.Contains(warning.Err.Error(), "remain after pruning paths for") {
 				warnings = append(warnings, warning)
 			}
-		}
 		return warnings
 	}
 	for i, tt := range input {
@@ -1170,7 +1137,6 @@ func TestIndexJoinHint(t *testing.T) {
 		tk.Session().GetSessionVars().StmtCtx.TruncateWarnings(0)
 		require.Equal(t, output[i].Plan, core.ToString(p), comment)
 	}
-}
 
 func TestHintFromDiffDatabase(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -1208,7 +1174,6 @@ func TestHintFromDiffDatabase(t *testing.T) {
 		})
 		require.Equal(t, output[i].Plan, core.ToString(p), comment)
 	}
-}
 
 func TestHJBuildAndProbeHint4DynamicPartitionTable(t *testing.T) {
 	failpoint.Enable("github.com/pingcap/tidb/pkg/planner/core/forceDynamicPrune", `return(true)`)
@@ -1247,7 +1212,6 @@ func TestHJBuildAndProbeHint4DynamicPartitionTable(t *testing.T) {
 		tk.MustQuery("explain format = 'brief' " + ts).Check(testkit.Rows(output[i].Plan...))
 		tk.MustQuery(ts).Sort().Check(testkit.Rows(output[i].Result...))
 	}
-}
 
 func TestHJBuildAndProbeHint4TiFlash(t *testing.T) {
 	var (
@@ -1286,7 +1250,6 @@ func TestHJBuildAndProbeHint4TiFlash(t *testing.T) {
 		})
 		tk.MustQuery("explain format = 'brief' " + ts).Check(testkit.Rows(output[i].Plan...))
 	}
-}
 
 func TestMPPSinglePartitionType(t *testing.T) {
 	var (
@@ -1322,7 +1285,6 @@ func TestMPPSinglePartitionType(t *testing.T) {
 		})
 		tk.MustQuery("explain format='brief' " + ts).Check(testkit.Rows(output[i].Plan...))
 	}
-}
 
 func TestCountStarForTiFlash(t *testing.T) {
 	var (
@@ -1356,7 +1318,6 @@ func TestCountStarForTiFlash(t *testing.T) {
 		})
 		tk.MustQuery("explain format = 'brief' " + ts).Check(testkit.Rows(output[i].Plan...))
 	}
-}
 
 func TestIssues49377Plan(t *testing.T) {
 	store := testkit.CreateMockStore(t)
@@ -1382,7 +1343,6 @@ func TestIssues49377Plan(t *testing.T) {
 		})
 		tk.MustQuery("explain format = 'brief' " + ts).Check(testkit.Rows(output[i].Plan...))
 	}
-}
 
 func TestHashAggPushdownToTiFlashCompute(t *testing.T) {
 	var (
@@ -1444,7 +1404,6 @@ func TestHashAggPushdownToTiFlashCompute(t *testing.T) {
 		})
 		tk.MustQuery("explain format = 'brief' " + ts).Check(testkit.Rows(output[i].Plan...))
 	}
-}
 
 func TestPointgetIndexChoosen(t *testing.T) {
 	var (
@@ -1472,7 +1431,6 @@ func TestPointgetIndexChoosen(t *testing.T) {
 		})
 		tk.MustQuery("explain format = 'brief' " + ts).Check(testkit.Rows(output[i].Plan...))
 	}
-}
 
 // Test issue #46962 plan
 func TestAlwaysTruePredicateWithSubquery(t *testing.T) {
@@ -1498,7 +1456,6 @@ func TestAlwaysTruePredicateWithSubquery(t *testing.T) {
 		})
 		tk.MustQuery(ts).Check(testkit.Rows(output[i].Plan...))
 	}
-}
 
 // TestExplainExpand
 func TestExplainExpand(t *testing.T) {
@@ -1533,13 +1490,11 @@ func TestExplainExpand(t *testing.T) {
 		})
 		tk.MustQuery(ts).Check(testkit.Rows(output[i].Plan...))
 	}
-}
 
 func TestPhysicalApplyIsNotPhysicalJoin(t *testing.T) {
 	// PhysicalApply is expected not to implement PhysicalJoin.
 	require.NotImplements(t, (*core.PhysicalJoin)(nil), new(core.PhysicalApply))
 }
-
 func TestDisableReuseChunk(t *testing.T) {
 	testkit.RunTestUnderCascades(t, func(t *testing.T, tk *testkit.TestKit, _, _ string) {
 		tk.MustExec("use test")
